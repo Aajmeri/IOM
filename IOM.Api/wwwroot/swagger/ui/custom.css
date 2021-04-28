@@ -1,0 +1,20 @@
+*{
+    color: black !important;
+}
+#swagger-ui {
+    background-color: rgb(75, 70, 70);
+    color: black !important;
+}
+.swagger-ui .info .title {
+    font-size: 36px;
+    margin: 0;
+    font-family: sans-serif;
+    color: black !important;
+}
+.swagger-ui{
+    color: black !important;
+}
+.swagger-ui .topbar {
+    background-color: black;
+    border-bottom: 3px solid black;
+}

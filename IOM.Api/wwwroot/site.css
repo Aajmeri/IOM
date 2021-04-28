@@ -1,0 +1,13 @@
+.content{
+    color: black !important;
+}
+.sidebar .sidebar-background:after {
+    background-color: rgb(10, 5, 27) !important;
+}
+.sidebar .nav li a{
+    color: white !important;
+}
+
+.sidebar li.active>a{
+    background-color: rgb(78, 78, 78);
+}
