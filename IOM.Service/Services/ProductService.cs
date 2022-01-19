@@ -24,6 +24,10 @@ namespace IOM.Service.Services
         {
             return await _unitOfWork.Products.GetAllWithSupplierProductAsync();
         }
+        public async Task<IEnumerable<Product>> GetAllWithSupplierProductAndProductItem()
+        {
+            return await _unitOfWork.Products.GetAllWithSupplierProductAndProductItemAsync();
+        }
         public async Task<Product> CreateProduct(Product newProduct)
         {
             await _unitOfWork.Products.AddAsync(newProduct);
@@ -32,9 +36,9 @@ namespace IOM.Service.Services
         }
         public async Task UpdateProduct(Product productTobeUpdated, Product product)
         {
-            if (productTobeUpdated.SupplierProduct != null)
+            if (productTobeUpdated.SupplierProducts != null)
             {
-                productTobeUpdated.SupplierProduct = product.SupplierProduct;
+                productTobeUpdated.SupplierProducts = product.SupplierProducts;
             }
             productTobeUpdated.Description = product.Description;
             productTobeUpdated.Name = product.Name;

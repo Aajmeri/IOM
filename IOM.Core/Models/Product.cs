@@ -11,7 +11,6 @@ namespace IOM.Core.Models
     {
         [Key]
         public Guid Id { get; set; }
-
         public string Name { get; set; }
 
         public string Description { get; set; }
@@ -19,9 +18,9 @@ namespace IOM.Core.Models
         [Column(TypeName = "decimal(18,4)")]
         public decimal Price { get; set; }
 
-        public int? Quantity { get; set; }
+        public IList<SupplierProduct> SupplierProducts { get; set; }
 
-        public IList<SupplierProduct> SupplierProduct { get; set; }
+        public IList<ProductItem> ProductItems {get; set;}
 
     }
 }

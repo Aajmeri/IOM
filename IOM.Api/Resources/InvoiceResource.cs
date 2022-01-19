@@ -9,8 +9,7 @@ namespace IOM.Api.Resources
         public Guid Id { get; set; }
         public string Number { get; set; }
         public string Total { get; set; }
-        public IList<InvoiceSupplier> InvoiceSupplier {get; set;}
-        public IList<InvoiceItem> InvoiceItem {get; set;}
-        
+        public IList<InvoiceSupplier> InvoiceSuppliers {get; set;}
+        public IList<InvoiceItem> InvoiceItems {get; set;}
     }
 }

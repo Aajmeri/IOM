@@ -10,6 +10,7 @@ namespace IOM.Data
         private readonly IOMContext _context;
         private InvoiceRepository _invoiceRepository;
         private ItemRepository _itemRepository;
+        // private BarcodeRepository _barcodeRepository;
         private ProductRepository _productRepository;
         private SupplierRepository _supplierRepository;
         private UserRepository _userRepository;
@@ -23,6 +24,7 @@ namespace IOM.Data
         public IInvoiceRepository Invoices => _invoiceRepository = _invoiceRepository ?? new InvoiceRepository(_context);
         public IItemRepository Items => _itemRepository = _itemRepository ?? new ItemRepository(_context);
         public IProductRepository Products => _productRepository = _productRepository ?? new ProductRepository(_context);
+        // public IBarcodeRepository Barcodes => _barcodeRepository = _barcodeRepository ?? new BarcodeRepository(_context);
         public ISupplierRepsoitory Suppliers => _supplierRepository = _supplierRepository ?? new SupplierRepository(_context);
         public IUserRepository Users => _userRepository = _userRepository ?? new UserRepository(_context);
 

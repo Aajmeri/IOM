@@ -33,9 +33,9 @@ namespace IOM.Service.Services
             supplierTobeUpdated.InvoiceSuppliers = supplier.InvoiceSuppliers;
             }
 
-             if(supplier.SupplierProduct != null)
+             if(supplier.SupplierProducts != null)
             {
-              supplierTobeUpdated.SupplierProduct = supplier.SupplierProduct;
+              supplierTobeUpdated.SupplierProducts = supplier.SupplierProducts;
             }
             
             supplierTobeUpdated.Name = supplier.Name;           

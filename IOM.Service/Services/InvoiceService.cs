@@ -34,13 +34,13 @@ namespace IOM.Service.Services
         }
         public async Task UpdateInvoice(Invoice invoiceTobeUpdated, Invoice invoice)
         {
-            if(invoiceTobeUpdated.InvoiceItem != null)
+            if(invoiceTobeUpdated.InvoiceItems != null)
             {
-            invoiceTobeUpdated.InvoiceItem = invoice.InvoiceItem;
+            invoiceTobeUpdated.InvoiceItems = invoice.InvoiceItems;
             }
-             if(invoiceTobeUpdated.InvoiceSupplier != null)
+             if(invoiceTobeUpdated.InvoiceSuppliers != null)
             {
-            invoiceTobeUpdated.InvoiceSupplier = invoice.InvoiceSupplier;
+            invoiceTobeUpdated.InvoiceSuppliers = invoice.InvoiceSuppliers;
             }
             invoiceTobeUpdated.UpdatedDate = DateTime.UtcNow;
             // invoiceTobeUpdated.UpdatedById = someuser

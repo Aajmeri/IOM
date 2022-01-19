@@ -23,10 +23,24 @@ namespace IOM.Data.Repositories
         public async Task<IEnumerable<Product>> GetAllWithSupplierProductAsync()
         {
             return await IOMContext.Products
-                .Include(i => i.SupplierProduct)
+                .Include(i => i.SupplierProducts)
+                .Where(i => i.Active)
                 .ToListAsync();
         }
-
+        public async Task<IEnumerable<Product>> GetAllWithSupplierProductAndProductItemAsync()
+        {
+            return await IOMContext.Products
+                .Include(i => i.ProductItems)
+                .Include(i => i.SupplierProducts)
+                .Where(i => i.Active)
+                .ToListAsync();
+        }
+        // public async Task<IEnumerable<Product>> GetAllWithProductBarcodeAsync()
+        // {
+        //     return await IOMContext.Products
+        //         .Include(i => i.ProductBarcodes)
+        //         .ToListAsync();
+        // }
  
         private IOMContext IOMContext
         {

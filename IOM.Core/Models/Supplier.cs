@@ -10,12 +10,10 @@ namespace IOM.Core.Models
     {
         [Key]
         public Guid Id { get; set; }
-
         public string Name { get; set; }
 
-        public IList<SupplierProduct> SupplierProduct { get; set; }
-        public IList<InvoiceSupplier> InvoiceSuppliers { get; set; }
-        
+        public IList<SupplierProduct> SupplierProducts { get; set; }
+        public IList<InvoiceSupplier> InvoiceSuppliers { get; set; }  
 
     }
 }

@@ -12,10 +12,20 @@ namespace IOM.Core.Models
         [Key]
         public Guid Id { get; set; }
 
-        [ForeignKey("ProductId")]
-        public Product Product {get; set;}
-        public Guid ProductId {get; set; }
+        public string Name { get; set; }
+        public DateTime? ReceivedDate { get; set; }
+
+        public DateTime? ExpirationDate { get; set; }
+
+        public string Barcode { get; set; }
+
+        public IList<ProductItem> ProductItems { get; set; }
+
         public IList<InvoiceItem> InvoiceItem { get; set; }
+
+        //  [ForeignKey("ProductId")]
+        // public Product Product {get; set;}
+        // public Guid ProductId {get; set; }
 
     }
 }

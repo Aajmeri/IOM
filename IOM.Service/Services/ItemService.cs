@@ -24,6 +24,11 @@ namespace IOM.Service.Services
         {
             return await _unitOfWork.Items.GetByProductIdAsync(productId);
         }
+
+        public async Task<IEnumerable<Item>> GetActive()
+        {
+            return await _unitOfWork.Items.GetActiveAsync();
+        }
         public async Task<Item> CreateItem(Item newItem)
         {
             newItem.CreatedDate = DateTime.UtcNow;
@@ -35,7 +40,7 @@ namespace IOM.Service.Services
         }
         public async Task UpdateItem(Item itemTobeUpdated, Item item)
         {
-            itemTobeUpdated.ProductId = item.Id;
+            // itemTobeUpdated.ProductId = item.Id;
             if (itemTobeUpdated.InvoiceItem != null)
             {
                 itemTobeUpdated.InvoiceItem = item.InvoiceItem;

@@ -12,6 +12,5 @@ namespace IOM.Core.Models
         public Supplier Supplier { get; set; }
         public Guid InvoiceId { get; set; }
         public Invoice Invoice { get; set; }
-     
     }
 }

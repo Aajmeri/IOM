@@ -18,15 +18,15 @@ namespace IOM.Data.Repositories
         public async Task<IEnumerable<Invoice>> GetAllWithInvoiceSupplierAndInvoiceItemsAsync()
         {
             return await IOMContext.Invoices
-                .Include(i => i.InvoiceSupplier)
-                .Include(i => i.InvoiceItem)   
+                .Include(i => i.InvoiceSuppliers)
+                .Include(i => i.InvoiceItems)   
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Invoice>> GetByInvoiceSupplierIdAsync(InvoiceSupplier invoiceSupplier)
         {
             return await IOMContext.Invoices
-                .Where(i => i.InvoiceSupplier == invoiceSupplier) 
+                .Where(i => i.InvoiceSuppliers == invoiceSupplier) 
                 .ToListAsync();
         }
 

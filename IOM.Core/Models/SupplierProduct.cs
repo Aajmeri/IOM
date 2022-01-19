@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace IOM.Core.Models
 {
-    public class SupplierProduct : Base
+    public class SupplierProduct
     {
         public Guid SupplierId { get; set; }
 

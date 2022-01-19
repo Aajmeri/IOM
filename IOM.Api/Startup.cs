@@ -4,17 +4,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using IOM.Core.Models;
 using IOM.Data;
 using IOM.Core;
 using IOM.Core.Services;
 using IOM.Service.Services;
-using Swashbuckle.AspNetCore;
 using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
 using IOM.Api.Filters;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Rewrite;
 
 namespace IOM.Api
 {
@@ -41,7 +37,10 @@ namespace IOM.Api
             services.AddTransient<ISupplierService, SupplierService>();
             services.AddTransient<IUserService, UserService>();
 
-            services.AddControllersWithViews();
+           services.AddControllersWithViews()
+            .AddNewtonsoftJson(options =>
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+        );
 
             // services.AddRazorPages();
             // .AddRazorPagesOptions(options => 
@@ -86,19 +85,12 @@ namespace IOM.Api
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-            // var option = new RewriteOptions();
-            // option.AddRedirect("^$", "swagger/ui");
-            // app.UseRewriter(option);
 
             app.UseHttpsRedirection();
-
             //replaces app.usestaticfile
-            app.UseFileServer();
-
+            app.UseStaticFiles();
+            // app.UseFileServer();
             app.UseWebOptimizer();
-
-
-
             app.UseSwaggerUI(c =>
                 {
                     c.RoutePrefix = "";
@@ -106,26 +98,15 @@ namespace IOM.Api
                     // c.InjectStylesheet("swagger/ui/custom.css");
                 });
 
-            // app.Run(context => {
-            //         context.Response.Redirect("swagger/ui");
-            //         return Task.CompletedTask;
-            //     });
-
-
             app.UseRouting();
-
             app.Use(async (context, next) =>
             {
                 var controller = context.Request.RouteValues["controller"];
                 await next();
             });
-
+            
             app.UseAuthorization();
-
-            // app.UseCors();
-
             app.UseSwagger();
-
 
             app.UseEndpoints(endpoints =>
             {
@@ -136,6 +117,14 @@ namespace IOM.Api
                 //Routes for pages
                 // endpoints.MapControllers(); //Routes for my API controllers
             });
+            // app.Run(context => {
+            //         context.Response.Redirect("swagger/ui");
+            //         return Task.CompletedTask;
+            //     });
+
+                // var option = new RewriteOptions();
+            // option.AddRedirect("^$", "swagger/ui");
+            // app.UseRewriter(option);
 
         }
     }

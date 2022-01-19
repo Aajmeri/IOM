@@ -15,7 +15,6 @@ namespace IOM.Api.Filters
                 var errorsInModelState = context.ModelState
                     .Where(i => i.Value.Errors.Count > 0)
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Errors.Select(i => i.ErrorMessage)).ToArray();
-                
                 var errorResponse = new ErrorResponse();
 
                 foreach (var error in errorsInModelState)

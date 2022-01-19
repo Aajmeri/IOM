@@ -13,19 +13,14 @@ namespace IOM.Api.Mapping
             CreateMap<Item, ItemResource>();
             CreateMap<Product, ProductResource>();
             CreateMap<Invoice, InvoiceResource>();
-
-          
-            
             // Resource to Domain
             CreateMap<SupplierResource, Supplier>();
             CreateMap<ItemResource, Item>();
             CreateMap<ProductResource, Product>();
             CreateMap<InvoiceResource, Invoice>();
 
-
             // CreateMap<Product, SaveProductResource>();
             CreateMap<SaveProductResource, Product>();
-            
         }
     }
 }

@@ -9,9 +9,9 @@ namespace IOM.Core.Services
     {
         Task<Product> GetProductById(Guid id);
         Task<IEnumerable<Product>> GetAllWithSupplierProduct();
+        Task<IEnumerable<Product>> GetAllWithSupplierProductAndProductItem();
         Task<Product> CreateProduct(Product newProduct);
         Task UpdateProduct(Product productToBeUpdated, Product product);
-
         Task DeleteProduct(Product product);
 
     }

@@ -18,7 +18,7 @@ namespace IOM.Data.Repositories
 
         {
             return await IOMContext.Suppliers
-                .Include(x => x.SupplierProduct)
+                .Include(x => x.SupplierProducts)
                 .Include(x => x.InvoiceSuppliers)
                 .ToListAsync();
         }

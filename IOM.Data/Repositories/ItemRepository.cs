@@ -15,20 +15,29 @@ namespace IOM.Data.Repositories
 
         }
 
-        public async Task<IEnumerable<Item>> GetAllWithProductsAsync()
-        {
-            return await IOMContext.Item
-                .Include(i => i.Product)
-                .ToListAsync();
-        }
-
         public async Task<IEnumerable<Item>> GetByProductIdAsync(Guid productId)
         {
             return await IOMContext.Item
-                .Include(i => i.Product)
-                .Where(i => i.ProductId == productId)
+                .Where(i => i.ProductItems.Any(x => x.ProductId == productId))
+                // .Include(i => i.ProductItems.Where(i => i.ProductId == productId))
                 .ToListAsync();
         }
+
+        
+        public async Task<IEnumerable<Item>> GetActiveAsync()
+        {
+            return await IOMContext.Item
+                .Include(i => i.ProductItems)
+                .ToListAsync();
+        }
+
+        // public async Task<IEnumerable<Item>> GetByProductIdAsync(Guid productId)
+        // {
+        //     return await IOMContext.Item
+        //         .Include(i => i.Product)
+        //         .Where(i => i.ProductId == productId)
+        //         .ToListAsync();
+        // }
 
         private IOMContext IOMContext
         {
