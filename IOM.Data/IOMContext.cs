@@ -1,7 +1,5 @@
 using IOM.Core.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Bogus;
 
 namespace IOM.Data
 {
