@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using IOM.Core.Models;
-
 namespace IOM.Api.Resources
 {
     public class SaveProductResource
