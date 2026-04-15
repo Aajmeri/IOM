@@ -7,7 +7,7 @@ using Riok.Mapperly.Abstractions;
 namespace IOM.Core.Models
 {
     [Mapper]
-    public class Product : Base
+    public partial class Product : Base
     {
         [Key]
         public Guid Id { get; set; }

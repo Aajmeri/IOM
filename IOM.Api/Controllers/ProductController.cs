@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AutoMapper;
+using IOM.Api.Mapping;
 using IOM.Api.Resources;
 using IOM.Core.Models;
 using IOM.Core.Services;
@@ -16,10 +16,9 @@ namespace IOM.Api.Controllers
 	{
 		private readonly ILogger<ProductController> _logger;
 		private readonly IProductService _productService;
-		private readonly  IMapper _mapper;
-
+		private readonly  ProductMapper _mapper;
 		public ProductController(ILogger<ProductController> logger, IProductService productService
-		, IMapper mapper)
+		, ProductMapper mapper)
 		{
 			_logger = logger;
 			_productService = productService;
@@ -35,7 +34,7 @@ namespace IOM.Api.Controllers
 		public async Task<ActionResult<IEnumerable<ProductResource>>> Index()
 		{
 			var products = await _productService.GetAllWithSupplierProduct();
-			var productResources = _mapper.Map<IEnumerable<Product>, IEnumerable<ProductResource>>(products);
+			var productResources = _mapper.ToResource(products);
 			return View(productResources);
 		}
 
@@ -43,7 +42,7 @@ namespace IOM.Api.Controllers
 		public async Task<ActionResult<ProductResource>> GetProductById(Guid id)
 		{
 			var product = await _productService.GetProductById(id);
-			var productResource = _mapper.Map<Product, ProductResource>(product);
+			var productResource = _mapper.ToResource(product);
 
 			return Ok(productResource);
 		}
@@ -51,13 +50,13 @@ namespace IOM.Api.Controllers
 		[HttpPost("")]
 		public async Task<ActionResult<ProductResource>> CreateProduct ([FromBody] SaveProductResource saveProductResource)
 		{
-			var productToCreate = _mapper.Map<SaveProductResource, Product>(saveProductResource);
+			var productToCreate = _mapper.ToDomain(saveProductResource);
 
 			var newProduct = await _productService.CreateProduct(productToCreate);
 
 			var product = await _productService.GetProductById(newProduct.Id);
 
-			var productResource = _mapper.Map<Product, ProductResource>(product);
+			var productResource = _mapper.ToResource(product); 
 
 			return Ok(productResource);
 		}

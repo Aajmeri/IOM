@@ -13,6 +13,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi;
 using FluentValidation;
+using IOM.Api.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<IOMContext>(options =>
@@ -24,6 +25,13 @@ builder.Services.AddTransient<IItemService, ItemService>();
 builder.Services.AddTransient<IProductService, ProductService>();
 builder.Services.AddTransient<ISupplierService, SupplierService>();
 builder.Services.AddTransient<IUserService, UserService>();
+
+
+builder.Services.AddScoped<ProductMapper>();
+builder.Services.AddScoped<SupplierMapper>();
+builder.Services.AddScoped<InvoiceMapper>();
+builder.Services.AddScoped<ItemMapper>();
+
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add(new ValidationFilter());
