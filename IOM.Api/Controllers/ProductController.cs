@@ -47,6 +47,7 @@ namespace IOM.Api.Controllers
 			return Ok(productResource);
 		}
 
+
 		[HttpPost("")]
 		public async Task<ActionResult<ProductResource>> CreateProduct ([FromBody] SaveProductResource saveProductResource)
 		{
@@ -61,10 +62,5 @@ namespace IOM.Api.Controllers
 			return Ok(productResource);
 		}
 
-		// [HttpPut("{id}")]
-		// public async Task<ActionResult<ProductResource>> UpdateProduct (int id, [FromBody] SaveProductResource saveProductResource)
-		// {
-
-		// }
 	}
 }

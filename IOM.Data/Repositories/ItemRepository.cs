@@ -17,14 +17,14 @@ namespace IOM.Data.Repositories
 
         public async Task<IEnumerable<Item>> GetAllWithProductsAsync()
         {
-            return await IOMContext.Item
+            return await IOMContext.Items
                 .Include(i => i.Product)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Item>> GetByProductIdAsync(Guid productId)
         {
-            return await IOMContext.Item
+            return await IOMContext.Items
                 .Include(i => i.Product)
                 .Where(i => i.ProductId == productId)
                 .ToListAsync();
