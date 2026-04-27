@@ -16,12 +16,12 @@ namespace IOM.Data
             modelBuilder.Entity<InvoiceSupplier>().HasKey(ip => new { ip.SupplierId, ip.InvoiceId });
             modelBuilder.Entity<Product>().Property(p => p.Price).HasColumnType("decimal(18,4)");
 
-            FakeData.Init(100);
-            // modelBuilder.Entity<User>().HasData(FakeData.Users);
-            modelBuilder.Entity<Supplier>().HasData(FakeData.Suppliers);
-            modelBuilder.Entity<Product>().HasData(FakeData.Products);
-            modelBuilder.Entity<Item>().HasData(FakeData.Items);
-            modelBuilder.Entity<Invoice>().HasData(FakeData.Invoices);
+            // FakeData.Init(100);
+            // // modelBuilder.Entity<User>().HasData(FakeData.Users);
+            // modelBuilder.Entity<Supplier>().HasData(FakeData.Suppliers);
+            // modelBuilder.Entity<Product>().HasData(FakeData.Products);
+            // modelBuilder.Entity<Item>().HasData(FakeData.Items);
+            // modelBuilder.Entity<Invoice>().HasData(FakeData.Invoices);
             
             // modelBuilder.Entity<InvoiceItem>().HasData(FakeData.InvoiceItems);
             // modelBuilder.Entity<InvoiceSupplier>().HasData(FakeData.InvoiceSupplier);
@@ -30,7 +30,7 @@ namespace IOM.Data
 
 
         // Entities        
-        public DbSet<Item> Item { get; set; }
+        public DbSet<Item> Items { get; set; }
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceItem> InvoiceProducts { get; set; }
         public DbSet<Product> Products { get; set; }

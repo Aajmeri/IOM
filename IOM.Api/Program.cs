@@ -14,11 +14,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi;
 using FluentValidation;
 using IOM.Api.Mapping;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<IOMContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("IOM") ?? throw new InvalidOperationException("Connection string 'IOM' not found."))
-    .EnableSensitiveDataLogging());
+options.UseSqlServer(builder.Configuration.GetConnectionString("IOM") ?? throw new InvalidOperationException("Connection string 'IOM' not found.")
+    , x => x.MigrationsAssembly("IOM.Data"))
+    .EnableSensitiveDataLogging()
+    .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IInvoiceService, InvoiceService>();
 builder.Services.AddTransient<IItemService, ItemService>();
@@ -43,8 +47,20 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "IOM", Version = "v1" });
 });
+
 builder.Services.AddControllers();
+
+//App builder
 var app = builder.Build();
+
+// Seed the database
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<IOMContext>();
+    context.Database.Migrate(); // Creates DB and runs migrations
+    DataSeeder.Seed(context);   // Seeds fake data
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -59,12 +75,11 @@ app.UseStaticFiles();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.RoutePrefix = "";
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "IOM V1");
 });
 app.UseRouting();
 app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Index}/{action=Index}/{id?}");
+    pattern: "{controller=Product}/{action=Index}/{id?}");
 app.Run();
