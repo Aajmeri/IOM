@@ -22,7 +22,7 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("IOM") ?? throw n
     , x => x.MigrationsAssembly("IOM.Data"))
     .EnableSensitiveDataLogging()
     .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
-    
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IInvoiceService, InvoiceService>();
 builder.Services.AddTransient<IItemService, ItemService>();
@@ -75,7 +75,6 @@ app.UseStaticFiles();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.RoutePrefix = "";
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "IOM V1");
 });
 app.UseRouting();
