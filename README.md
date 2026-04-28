@@ -97,4 +97,4 @@ This is currently a personal practice project. Contributions, suggestions, and f
 
 ## License
 
-MIT
+Private
