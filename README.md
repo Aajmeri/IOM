@@ -4,4 +4,4 @@ I started a practice project that centered around providing Royal Distributors a
 A skeleton has been built to support asp.net 10 with an mvc style project with clean architecture, middleware, setup for logging and different user roles using authentication and authorization. 
 
 
-Future goals are to migration to razor pages or latest versions of Angular framework.
+Future goals are to update to razor pages or latest versions of Angular framework.
