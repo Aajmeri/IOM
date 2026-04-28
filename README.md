@@ -1,6 +1,6 @@
 <img width="1864" height="920" alt="image" src="https://github.com/user-attachments/assets/f4056d35-3f11-42c2-96e3-c9afce7a1ac5" />
 
-# Royal Distributors Enterprise Management System
+# Inventory and Operations Management System
 
 A full-stack enterprise web application designed to centralize and streamline operations for Royal Distributors — covering product management, supplier tracking, client management, order processing, and delivery scheduling in one unified platform.
 
@@ -59,10 +59,10 @@ This project began as a practice initiative to explore clean architecture patter
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/royal-distributors.git
+git clone (https://github.com/Aajmeri/IOM.git)
 
 # Navigate to the project
-cd royal-distributors
+cd IOM
 
 # Restore dependencies
 dotnet restore
