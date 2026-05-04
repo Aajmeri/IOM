@@ -14,6 +14,10 @@ namespace IOM.Api.Resources
 
         public decimal Price { get; set; }
 
-         public IList<SupplierProduct> SupplierProduct { get; set; }
+        public int Quantity { get; set; }
+
+        public bool Visibility { get; set; }
+
+        public IList<SupplierProduct> SupplierProduct { get; set; }
     }
 }

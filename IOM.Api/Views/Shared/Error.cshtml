@@ -1,25 +1,63 @@
-@model ErrorViewModel
+@model IOM.Api.Models.ErrorViewModel
 @{
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
     ViewData["Title"] = "Error";
+
+    string icon, title, subtitle;
+    switch (Model.StatusCode)
+    {
+        case 404:
+            icon = "fas fa-search";
+            title = "404 — Page Not Found";
+            subtitle = "The page you are looking for could not be found.";
+            break;
+        case 403:
+            icon = "fas fa-ban";
+            title = "403 — Access Denied";
+            subtitle = "You do not have permission to access this resource.";
+            break;
+        case 401:
+            icon = "fas fa-lock";
+            title = "401 — Unauthorized";
+            subtitle = "Please sign in to continue.";
+            break;
+        default:
+            icon = "fas fa-exclamation-triangle";
+            title = "Something Went Wrong";
+            subtitle = "An unexpected error occurred. Please try again.";
+            break;
+    }
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="login-box" style="width:420px">
+  <div class="login-logo">
+    <b>Royal</b> Distributors
+  </div>
+  <div class="card">
+    <div class="card-body login-card-body text-center py-4">
+      <div class="mb-3">
+        <i class="@icon fa-4x text-secondary"></i>
+      </div>
+      <h4 class="mb-1">@title</h4>
+      <p class="text-muted mb-4">@subtitle</p>
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+      @if (Model.StatusCode == 401)
+      {
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-block mb-2">
+          <i class="fas fa-sign-in-alt mr-1"></i> Sign In
+        </a>
+      }
+      else
+      {
+        <a asp-controller="Product" asp-action="Index" class="btn btn-primary btn-block mb-2">
+          <i class="fas fa-home mr-1"></i> Go to Dashboard
+        </a>
+      }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+      @if (Model.ShowRequestId)
+      {
+        <p class="text-muted small mt-3 mb-0">Request ID: <code>@Model.RequestId</code></p>
+      }
+    </div>
+  </div>
+</div>

@@ -28,13 +28,17 @@
     <ul class="navbar-nav ml-auto">
       <li class="nav-item dropdown">
         <a class="nav-link" data-toggle="dropdown" href="#">
-          <i class="fas fa-user-circle"></i>
+          <i class="fas fa-user-circle mr-1"></i>
+          <span class="d-none d-sm-inline">@(User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value ?? User.Identity?.Name)</span>
         </a>
         <div class="dropdown-menu dropdown-menu-right">
-          <a href="#" class="dropdown-item">Profile</a>
-          <a href="#" class="dropdown-item">Settings</a>
           <div class="dropdown-divider"></div>
-          <a href="#" class="dropdown-item">Log out</a>
+          <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+            @Html.AntiForgeryToken()
+          </form>
+          <a href="#" onclick="document.getElementById('logoutForm').submit(); return false;" class="dropdown-item">
+            <i class="fas fa-sign-out-alt mr-2"></i> Log out
+          </a>
         </div>
       </li>
     </ul>
@@ -51,15 +55,18 @@
           <li class="nav-item">
             <a href="/product/index" class="nav-link">
               <i class="nav-icon fas fa-box"></i>
-              <p>Products List</p>
+              <p>Products</p>
             </a>
           </li>
+          @if (User.IsInRole("Admin"))
+          {
           <li class="nav-item">
-            <a href="/Item/Index" class="nav-link">
-              <i class="nav-icon fas fa-list"></i>
-              <p>Item List</p>
+            <a href="/User/Index" class="nav-link">
+              <i class="nav-icon fas fa-users"></i>
+              <p>Users</p>
             </a>
           </li>
+          }
           <li class="nav-item">
             <a href="/Supplier/Index" class="nav-link">
               <i class="nav-icon fas fa-industry"></i>
@@ -69,7 +76,7 @@
           <li class="nav-item">
             <a href="/Pickup/Schedule" class="nav-link">
               <i class="nav-icon fas fa-calendar-alt"></i>
-              <p>Schedule Pick-up</p>
+              <p>Schedule Shipping</p>
             </a>
           </li>
           <li class="nav-item">

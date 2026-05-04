@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using FluentValidation.AspNetCore;
 using IOM.Data;
 using IOM.Core;
+using IOM.Core.Models;
 using IOM.Core.Services;
 using IOM.Service.Services;
 using IOM.Api.Filters;
@@ -15,6 +16,8 @@ using Microsoft.OpenApi;
 using FluentValidation;
 using IOM.Api.Mapping;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<IOMContext>(options =>
@@ -30,11 +33,20 @@ builder.Services.AddTransient<IProductService, ProductService>();
 builder.Services.AddTransient<ISupplierService, SupplierService>();
 builder.Services.AddTransient<IUserService, UserService>();
 
-
 builder.Services.AddScoped<ProductMapper>();
 builder.Services.AddScoped<SupplierMapper>();
 builder.Services.AddScoped<InvoiceMapper>();
 builder.Services.AddScoped<ItemMapper>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+    });
 
 builder.Services.AddControllersWithViews(options =>
 {
@@ -50,15 +62,26 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddControllers();
 
-//App builder
 var app = builder.Build();
 
-// Seed the database
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<IOMContext>();
-    context.Database.Migrate(); // Creates DB and runs migrations
-    DataSeeder.Seed(context);   // Seeds fake data
+    context.Database.Migrate();
+    DataSeeder.Seed(context);
+
+    if (!context.Users.Any(u => u.Role == "Admin"))
+    {
+        var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        await userService.CreateUser(new User
+        {
+            Id = Guid.NewGuid(),
+            Name = "Admin",
+            Email = "admin@admin.com",
+            Password = "Admin123!",
+            Role = "Admin"
+        });
+    }
 }
 
 if (app.Environment.IsDevelopment())
@@ -70,6 +93,8 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSwagger();
@@ -78,6 +103,7 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "IOM V1");
 });
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",

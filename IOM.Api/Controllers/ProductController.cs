@@ -1,66 +1,98 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 using IOM.Api.Mapping;
 using IOM.Api.Resources;
 using IOM.Core.Models;
 using IOM.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace IOM.Api.Controllers
 {
-	// [Route("api/[controller]")]
-	// [ApiController]
+	[Authorize]
 	public class ProductController : Controller
 	{
 		private readonly ILogger<ProductController> _logger;
 		private readonly IProductService _productService;
-		private readonly  ProductMapper _mapper;
-		public ProductController(ILogger<ProductController> logger, IProductService productService
-		, ProductMapper mapper)
+		private readonly ProductMapper _mapper;
+
+		public ProductController(ILogger<ProductController> logger, IProductService productService, ProductMapper mapper)
 		{
 			_logger = logger;
 			_productService = productService;
 			_mapper = mapper;
 		}
 
-		// public IActionResult Index()
-		// {
-		// 	return View(ProductResource);
-		// }
-
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<ProductResource>>> Index()
+		public async Task<IActionResult> Index()
 		{
 			var products = await _productService.GetAllWithSupplierProduct();
-			var productResources = _mapper.ToResource(products);
-			return View(productResources);
+			return View(_mapper.ToResource(products));
 		}
 
-		[HttpGet("{id}")]
-		public async Task<ActionResult<ProductResource>> GetProductById(Guid id)
+		[Authorize(Roles = "Admin,Warehouse")]
+		[HttpGet]
+		public IActionResult Create()
+		{
+			return View(new SaveProductResource { Visibility = true });
+		}
+
+		[Authorize(Roles = "Admin,Warehouse")]
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Create(SaveProductResource model)
+		{
+			if (!ModelState.IsValid) return View(model);
+			var product = _mapper.ToDomain(model);
+			await _productService.CreateProduct(product);
+			return RedirectToAction(nameof(Index));
+		}
+
+		[Authorize(Roles = "Admin,Warehouse")]
+		[HttpGet]
+		public async Task<IActionResult> Edit(Guid id)
 		{
 			var product = await _productService.GetProductById(id);
-			var productResource = _mapper.ToResource(product);
-
-			return Ok(productResource);
+			if (product == null) return NotFound();
+			var model = new SaveProductResource
+			{
+				Name = product.Name,
+				Description = product.Description,
+				Price = product.Price,
+				Quantity = product.Quantity,
+				Visibility = product.Visibility
+			};
+			ViewData["ProductId"] = id;
+			return View(model);
 		}
 
-
-		[HttpPost("")]
-		public async Task<ActionResult<ProductResource>> CreateProduct ([FromBody] SaveProductResource saveProductResource)
+		[Authorize(Roles = "Admin,Warehouse")]
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(Guid id, SaveProductResource model)
 		{
-			var productToCreate = _mapper.ToDomain(saveProductResource);
-
-			var newProduct = await _productService.CreateProduct(productToCreate);
-
-			var product = await _productService.GetProductById(newProduct.Id);
-
-			var productResource = _mapper.ToResource(product); 
-
-			return Ok(productResource);
+			if (!ModelState.IsValid)
+			{
+				ViewData["ProductId"] = id;
+				return View(model);
+			}
+			var product = await _productService.GetProductById(id);
+			if (product == null) return NotFound();
+			var updated = _mapper.ToDomain(model);
+			await _productService.UpdateProduct(product, updated);
+			return RedirectToAction(nameof(Index));
 		}
 
+		[Authorize(Roles = "Admin,Warehouse")]
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Delete(Guid id)
+		{
+			var product = await _productService.GetProductById(id);
+			if (product == null) return NotFound();
+			await _productService.DeleteProduct(product);
+			return RedirectToAction(nameof(Index));
+		}
 	}
 }

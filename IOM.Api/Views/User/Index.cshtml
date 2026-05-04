@@ -1,0 +1,86 @@
+@model IEnumerable<IOM.Core.Models.User>
+@{
+    ViewBag.Title = "Users";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Users</h3>
+            </div>
+            <div class="card-body">
+                <table id="usersTable" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Active</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>@user.Name</td>
+                                <td>@user.Email</td>
+                                <td>
+                                    @{
+                                        var badgeClass = user.Role switch
+                                        {
+                                            "Admin" => "badge-danger",
+                                            "Warehouse" => "badge-warning",
+                                            _ => "badge-info"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@(user.Role ?? "Client")</span>
+                                </td>
+                                <td>
+                                    @if (user.Active)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-warning btn-xs">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@user.Id" method="post" style="display:inline"
+                                          onsubmit="return confirm('Delete this user?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger btn-xs">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#usersTable').DataTable({
+                "pagingType": "full_numbers",
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                "responsive": true,
+                "language": {
+                    "search": "_INPUT_",
+                    "searchPlaceholder": "Search users",
+                }
+            });
+        });
+    </script>
+}

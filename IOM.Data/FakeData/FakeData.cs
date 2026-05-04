@@ -36,6 +36,8 @@ namespace IOM.Data
                 .RuleFor(x => x.Name, x => x.Commerce.ProductName())
                 .RuleFor(x => x.Description, x => x.Commerce.ProductDescription())
                 .RuleFor(x => x.Price, x => x.Finance.Amount(1, 1000, 2))
+                .RuleFor(x => x.Quantity, x => x.Random.Int(0, 500))
+                .RuleFor(x => x.Visibility, x => true)
                 .RuleFor(x => x.CreatedById, x => new Guid("380257E5-545A-4C63-A793-F79482B27057"))
                 .RuleFor(x => x.Active, x => true)
                 .RuleFor(x => x.UpdatedDate,x => x.Date.Recent());

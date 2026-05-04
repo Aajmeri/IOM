@@ -1,22 +1,39 @@
-﻿@model IEnumerable<IOM.Api.Resources.ProductResource>
+@model IEnumerable<IOM.Api.Resources.ProductResource>
 @{
     ViewBag.Title = "Products";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    bool canManage = User.IsInRole("Admin") || User.IsInRole("Warehouse");
+    bool isClient = User.IsInRole("Client");
 }
 
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="card-title">Products</h3>
+                @if (canManage)
+                {
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus mr-1"></i> New Product
+                    </a>
+                }
             </div>
             <div class="card-body">
-                <table id="index" class="table table-bordered table-striped">
+                <table id="productsTable" class="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Price</th>
+                            @if (!isClient)
+                            {
+                                <th>Quantity</th>
+                            }
+                            <th>Visible</th>
+                            @if (canManage)
+                            {
+                                <th>Actions</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -25,7 +42,36 @@
                             <tr>
                                 <td>@product.Name</td>
                                 <td>@product.Description</td>
-                                <td>@product.Price</td>
+                                <td>@product.Price.ToString("C")</td>
+                                @if (!isClient)
+                                {
+                                    <td>@product.Quantity</td>
+                                }
+                                <td>
+                                    @if (product.Visibility)
+                                    {
+                                        <span class="badge badge-success">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">No</span>
+                                    }
+                                </td>
+                                @if (canManage)
+                                {
+                                    <td>
+                                        <a asp-action="Edit" asp-route-id="@product.Id" class="btn btn-warning btn-xs">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@product.Id" method="post" style="display:inline"
+                                              onsubmit="return confirm('Delete this product?')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-xs">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
@@ -38,7 +84,7 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            $('#index').DataTable({
+            $('#productsTable').DataTable({
                 "pagingType": "full_numbers",
                 "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
                 "responsive": true,

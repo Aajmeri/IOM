@@ -1,28 +1,20 @@
+using System.Threading.Tasks;
 using IOM.Core.Models;
 using IOM.Core.Repositories;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace IOM.Data.Repositories
 {
     public class UserRepository : Repository<User>, IUserRepository
     {
-        public UserRepository(IOMContext dbContext) : base(dbContext)
+        public UserRepository(IOMContext dbContext) : base(dbContext) { }
+
+        public async Task<User> GetByEmailAsync(string email)
         {
-            
+            return await IOMContext.Users
+                .SingleOrDefaultAsync(u => u.Email == email);
         }
 
-        // public async Task<IEnumerable<User>> GetAllWithProductsAsync()
-        // {
-        //     return await IOMContext.Users
-        //         .Include(u => u.)
-        // }
-        // Task<IEnumerable<User>> GetAllWithSuppliersAsync();
-        // Task<IEnumerable<User>> GetAllWithInvoicesAsync();
-
- 
-        private IOMContext IOMContext
-        {
-            get { return Context as IOMContext;}
-        }
+        private IOMContext IOMContext => Context as IOMContext;
     }
 }

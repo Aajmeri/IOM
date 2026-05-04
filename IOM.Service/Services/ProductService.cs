@@ -25,6 +25,9 @@ namespace IOM.Service.Services
         }
         public async Task<Product> CreateProduct(Product newProduct)
         {
+            newProduct.CreatedDate = DateTime.UtcNow;
+            newProduct.UpdatedDate = DateTime.UtcNow;
+            newProduct.Active = true;
             await _unitOfWork.Products.AddAsync(newProduct);
             await _unitOfWork.CommitAsync();
             return newProduct;
@@ -32,16 +35,13 @@ namespace IOM.Service.Services
         public async Task UpdateProduct(Product productTobeUpdated, Product product)
         {
             if (productTobeUpdated.SupplierProduct != null)
-            {
                 productTobeUpdated.SupplierProduct = product.SupplierProduct;
-            }
-            productTobeUpdated.Description = product.Description;
             productTobeUpdated.Name = product.Name;
+            productTobeUpdated.Description = product.Description;
             productTobeUpdated.Price = product.Price;
-            productTobeUpdated.Active = product.Active;
+            productTobeUpdated.Quantity = product.Quantity;
+            productTobeUpdated.Visibility = product.Visibility;
             productTobeUpdated.UpdatedDate = DateTime.UtcNow;
-            // productTobeUpdated.UpdatedById = someuser
-
             await _unitOfWork.CommitAsync();
         }
 
