@@ -90,8 +90,7 @@ RoyalDistributors/
 ---
 
 ## Contributing
-
-This is currently a personal practice project. Contributions, suggestions, and feedback are welcome — feel free to open an issue or pull request.
+ Contributions, suggestions, and feedback are welcome — feel free to open an issue or pull request.
 
 ---
 
