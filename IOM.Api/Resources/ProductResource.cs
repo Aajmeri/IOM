@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using IOM.Core.Models;
 
 namespace IOM.Api.Resources
 {
@@ -17,7 +16,5 @@ namespace IOM.Api.Resources
         public int Quantity { get; set; }
 
         public bool Visibility { get; set; }
-
-        public IList<SupplierProduct> SupplierProduct { get; set; }
     }
 }

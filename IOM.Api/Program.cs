@@ -11,20 +11,24 @@ using IOM.Core.Services;
 using IOM.Service.Services;
 using IOM.Api.Filters;
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi;
 using FluentValidation;
 using IOM.Api.Mapping;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddDbContext<IOMContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("IOM") ?? throw new InvalidOperationException("Connection string 'IOM' not found.")
-    , x => x.MigrationsAssembly("IOM.Data"))
-    .EnableSensitiveDataLogging()
-    .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IOM") ?? throw new InvalidOperationException("Connection string 'IOM' not found."),
+        x => x.MigrationsAssembly("IOM.Data"))
+        .EnableSensitiveDataLogging()
+        .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IInvoiceService, InvoiceService>();
@@ -38,29 +42,66 @@ builder.Services.AddScoped<SupplierMapper>();
 builder.Services.AddScoped<InvoiceMapper>();
 builder.Services.AddScoped<ItemMapper>();
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Account/Login";
-        options.LogoutPath = "/Account/Logout";
-        options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromHours(8);
-        options.SlidingExpiration = true;
-    });
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "IOM_SuperSecret_Key_2024_DoNotShare_32Chars!!";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "IOM";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "IOM";
 
-builder.Services.AddControllersWithViews(options =>
+builder.Services.AddAuthentication(options =>
+{
+    // Angular SPA authenticates via JWT bearer tokens.
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
+builder.Services.AddControllers(options =>
 {
     options.Filters.Add(new ValidationFilter());
 });
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "IOM", Version = "v1" });
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.ParameterLocation.Header,
+        Description = "Enter: Bearer {token}"
+    });
+    options.AddSecurityRequirement(document =>
+        new Microsoft.OpenApi.OpenApiSecurityRequirement
+        {
+            {
+                new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", document, null),
+                new List<string>()
+            }
+        });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AngularDev", policy =>
+        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials());
+});
 
 var app = builder.Build();
 
@@ -70,18 +111,33 @@ using (var scope = app.Services.CreateScope())
     context.Database.Migrate();
     DataSeeder.Seed(context);
 
-    if (!context.Users.Any(u => u.Role == "Admin"))
+    const string adminEmail = "admin@admin.com";
+    const string adminPassword = "Admin123!";
+    var admin = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail);
+    if (admin == null)
     {
         var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
         await userService.CreateUser(new User
         {
             Id = Guid.NewGuid(),
             Name = "Admin",
-            Email = "admin@admin.com",
-            Password = "Admin123!",
+            Email = adminEmail,
+            Password = adminPassword,
             Role = "Admin"
         });
     }
+    else
+    {
+        // Ensure the seeded admin can always authenticate with the known credentials.
+        admin.Password = IOM.Service.Helpers.PasswordHelper.Hash(adminPassword);
+        admin.Active = true;
+        await context.SaveChangesAsync();
+    }
+}
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
 }
 
 if (app.Environment.IsDevelopment())
@@ -90,11 +146,9 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSwagger();
@@ -102,10 +156,12 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "IOM V1");
 });
+app.UseCors("AngularDev");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Product}/{action=Index}/{id?}");
+
+app.MapControllers();
+app.MapFallbackToFile("index.html");
+
 app.Run();

@@ -1,0 +1,61 @@
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Products</h3>
+        @if (canManage) {
+          <a routerLink="/products/create" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus mr-1"></i> New Product
+          </a>
+        }
+      </div>
+      <div class="card-body">
+        @if (loading) {
+          <div class="text-center py-3"><span class="spinner-border text-primary"></span></div>
+        } @else if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        } @else {
+          <table id="productsTable" class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                @if (!isClient) { <th>Quantity</th> }
+                <th>Visible</th>
+                @if (canManage) { <th>Actions</th> }
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of products; track product.id) {
+                <tr>
+                  <td>{{ product.name }}</td>
+                  <td>{{ product.description }}</td>
+                  <td>{{ product.price | currency }}</td>
+                  @if (!isClient) { <td>{{ product.quantity }}</td> }
+                  <td>
+                    @if (product.visibility) {
+                      <span class="badge badge-success">Yes</span>
+                    } @else {
+                      <span class="badge badge-secondary">No</span>
+                    }
+                  </td>
+                  @if (canManage) {
+                    <td>
+                      <a [routerLink]="['/products/edit', product.id]" class="btn btn-warning btn-xs">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <button class="btn btn-danger btn-xs ml-1" (click)="delete(product.id)">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+</div>

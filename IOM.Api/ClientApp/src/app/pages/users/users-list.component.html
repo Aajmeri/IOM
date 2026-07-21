@@ -1,0 +1,52 @@
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Users</h3>
+      </div>
+      <div class="card-body">
+        @if (loading) {
+          <div class="text-center py-3"><span class="spinner-border text-primary"></span></div>
+        } @else if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        } @else {
+          <table id="usersTable" class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Active</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users; track user.id) {
+                <tr>
+                  <td>{{ user.name }}</td>
+                  <td>{{ user.email }}</td>
+                  <td><span class="badge" [ngClass]="roleBadge(user.role)">{{ user.role || 'Client' }}</span></td>
+                  <td>
+                    @if (user.active) {
+                      <span class="badge badge-success">Active</span>
+                    } @else {
+                      <span class="badge badge-secondary">Inactive</span>
+                    }
+                  </td>
+                  <td>
+                    <a [routerLink]="['/users/edit', user.id]" class="btn btn-warning btn-xs">
+                      <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <button class="btn btn-danger btn-xs ml-1" (click)="delete(user.id)">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+</div>
