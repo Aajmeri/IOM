@@ -20,6 +20,8 @@
               <tr>
                 <th>Name</th>
                 <th>Description</th>
+                <th>Barcode</th>
+                <th>Supplier</th>
                 <th>Price</th>
                 @if (!isClient) { <th>Quantity</th> }
                 <th>Visible</th>
@@ -31,6 +33,8 @@
                 <tr>
                   <td>{{ product.name }}</td>
                   <td>{{ product.description }}</td>
+                  <td>{{ product.barcode || '—' }}</td>
+                  <td>{{ product.supplierName || '—' }}</td>
                   <td>{{ product.price | currency }}</td>
                   @if (!isClient) { <td>{{ product.quantity }}</td> }
                   <td>

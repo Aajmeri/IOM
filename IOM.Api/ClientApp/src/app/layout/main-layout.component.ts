@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { BasketService } from '../services/basket.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -10,4 +11,5 @@ import { AuthService } from '../services/auth.service';
 })
 export class MainLayoutComponent {
   auth = inject(AuthService);
+  basket = inject(BasketService);
 }

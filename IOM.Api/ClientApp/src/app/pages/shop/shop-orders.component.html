@@ -1,0 +1,90 @@
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">My Orders</h3>
+        <a routerLink="/shop" class="btn btn-primary btn-sm">
+          <i class="fas fa-store mr-1"></i> Continue Shopping
+        </a>
+      </div>
+      <div class="card-body">
+        @if (placedConfirmation) {
+          <div class="alert alert-success">
+            <i class="fas fa-check-circle mr-1"></i> Your order has been submitted and is pending approval.
+          </div>
+        }
+
+        @if (loading) {
+          <div class="text-center py-3"><span class="spinner-border text-primary"></span></div>
+        } @else if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        } @else if (orders.length === 0) {
+          <div class="alert alert-secondary">
+            You haven't placed any orders yet. <a routerLink="/shop">Start shopping</a>.
+          </div>
+        } @else {
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Scheduled Date</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of orders; track order.id) {
+                <tr>
+                  <td>{{ order.number }}</td>
+                  <td>{{ order.scheduledDate | date:'medium' }}</td>
+                  <td><span class="badge" [class]="statusClass(order.status)">{{ order.status }}</span></td>
+                  <td>{{ order.total | currency }}</td>
+                  <td>
+                    <button type="button" class="btn btn-secondary btn-xs" (click)="toggleExpand(order)">
+                      {{ expandedOrderId === order.id ? 'Hide' : 'Details' }}
+                    </button>
+                    @if (order.status === 'Pending') {
+                      <button type="button" class="btn btn-danger btn-xs ml-1"
+                              [disabled]="cancellingId === order.id"
+                              (click)="cancel(order)">
+                        Cancel
+                      </button>
+                    }
+                  </td>
+                </tr>
+                @if (expandedOrderId === order.id) {
+                  <tr>
+                    <td colspan="5">
+                      @if (order.notes) {
+                        <p><strong>Notes:</strong> {{ order.notes }}</p>
+                      }
+                      @if (order.adminNotes) {
+                        <p><strong>Admin Notes:</strong> {{ order.adminNotes }}</p>
+                      }
+                      <table class="table table-sm mb-0">
+                        <thead>
+                          <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr>
+                        </thead>
+                        <tbody>
+                          @for (item of order.items; track item.productId) {
+                            <tr>
+                              <td>{{ item.productName }}</td>
+                              <td>{{ item.quantity }}</td>
+                              <td>{{ item.unitPrice | currency }}</td>
+                              <td>{{ item.unitPrice * item.quantity | currency }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+</div>

@@ -9,5 +9,7 @@ namespace IOM.Core.Repositories
 
         Task<IEnumerable<Supplier>> GetAllWithInvoiceSupplierAndSupplierProductAsync();
 
+        Task<IEnumerable<Supplier>> SearchByNameAsync(string query, int limit);
+
     }
 }

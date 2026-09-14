@@ -1,0 +1,133 @@
+<div class="row">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-barcode mr-2"></i>Scan In</h3>
+      </div>
+      <div class="card-body">
+        @if (warning) {
+          <div class="alert alert-warning alert-dismissible">
+            {{ warning }}
+            <button type="button" class="close" (click)="warning = ''"><span>&times;</span></button>
+          </div>
+        }
+        @if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        }
+
+        <div class="form-group">
+          <label>Scan Barcode</label>
+          <input
+            #scanInput
+            type="text"
+            class="form-control form-control-lg"
+            [(ngModel)]="scanValue"
+            name="scanValue"
+            [disabled]="state !== 'scan' || looking"
+            [readonly]="state !== 'scan'"
+            (keyup.enter)="onScanSubmit()"
+            placeholder="Focus here and scan a barcode…"
+            autocomplete="off">
+          @if (looking) {
+            <small class="form-text text-muted"><span class="spinner-border spinner-border-sm mr-1"></span>Looking up…</small>
+          }
+        </div>
+
+        @if (state === 'found' && foundProduct) {
+          <div class="border rounded p-3 mb-3 bg-light">
+            <h5 class="mb-1">{{ foundProduct.name }}</h5>
+            <div class="text-muted small">Barcode: {{ lastScannedBarcode }}</div>
+          </div>
+          <form (ngSubmit)="saveItem()" #itemForm="ngForm">
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label>Quantity</label>
+                <input type="number" class="form-control" [(ngModel)]="itemModel.quantity" name="quantity" min="1" required>
+              </div>
+              <div class="form-group col-md-6">
+                <label>Expiration Date (optional)</label>
+                <input type="date" class="form-control" [(ngModel)]="itemModel.expirationDate" name="expirationDate">
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="savingItem || itemForm.invalid">
+                @if (savingItem) { <span class="spinner-border spinner-border-sm mr-1"></span> }
+                Receive Item
+              </button>
+              <button type="button" class="btn btn-secondary ml-2" (click)="cancel()">Cancel</button>
+            </div>
+          </form>
+        }
+
+        @if (state === 'notfound') {
+          <div class="alert alert-info">
+            Product not found for barcode <strong>{{ lastScannedBarcode }}</strong> — create it?
+          </div>
+          <form (ngSubmit)="createProduct()" #newProductForm="ngForm">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" class="form-control" [(ngModel)]="newProduct.name" name="name" required>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea class="form-control" [(ngModel)]="newProduct.description" name="description" rows="2"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label>Price</label>
+                <input type="number" class="form-control" [(ngModel)]="newProduct.price" name="price" min="0" step="0.01">
+              </div>
+              <div class="form-group col-md-6">
+                <label>Supplier <span class="text-danger">*</span></label>
+                <app-supplier-search
+                  placeholder="Search supplier by name…"
+                  [required]="true"
+                  (selected)="onSupplierSelected($event)">
+                </app-supplier-search>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="creatingProduct || newProductForm.invalid || !newProduct.supplierId">
+                @if (creatingProduct) { <span class="spinner-border spinner-border-sm mr-1"></span> }
+                Create Product &amp; Continue
+              </button>
+              <button type="button" class="btn btn-secondary ml-2" (click)="cancel()">Cancel</button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Scanned This Session</h3>
+      </div>
+      <div class="card-body p-0" style="max-height: 480px; overflow-y: auto;">
+        @if (sessionLog.length === 0) {
+          <p class="text-muted p-3 mb-0">No items scanned yet.</p>
+        } @else {
+          <table class="table table-sm table-striped mb-0">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of sessionLog; track entry.time) {
+                <tr>
+                  <td>{{ entry.productName }}</td>
+                  <td>{{ entry.quantity }}</td>
+                  <td>{{ entry.time | date: 'shortTime' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+</div>

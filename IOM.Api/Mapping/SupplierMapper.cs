@@ -10,4 +10,5 @@ public partial class SupplierMapper
     public partial IEnumerable<SupplierResource> ToResource(IEnumerable<Supplier> Suppliers);
     public partial SupplierResource ToResource(Supplier Supplier);
     public partial Supplier ToDomain(SupplierResource resource);
+    public partial Supplier ToDomain(SaveSupplierResource resource);
 }

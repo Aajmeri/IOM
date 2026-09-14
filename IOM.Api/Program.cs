@@ -36,11 +36,17 @@ builder.Services.AddTransient<IItemService, ItemService>();
 builder.Services.AddTransient<IProductService, ProductService>();
 builder.Services.AddTransient<ISupplierService, SupplierService>();
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IDeliveryService, DeliveryService>();
+builder.Services.AddTransient<IOrderService, OrderService>();
+builder.Services.AddTransient<IAvailabilityService, AvailabilityService>();
+builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 
 builder.Services.AddScoped<ProductMapper>();
 builder.Services.AddScoped<SupplierMapper>();
 builder.Services.AddScoped<InvoiceMapper>();
 builder.Services.AddScoped<ItemMapper>();
+builder.Services.AddScoped<DeliveryMapper>();
+builder.Services.AddScoped<OrderMapper>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "IOM_SuperSecret_Key_2024_DoNotShare_32Chars!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "IOM";

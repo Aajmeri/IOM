@@ -15,6 +15,18 @@ namespace IOM.Data
             modelBuilder.Entity<SupplierProduct>().HasKey(sp => new { sp.SupplierId, sp.ProductId });
             modelBuilder.Entity<InvoiceSupplier>().HasKey(ip => new { ip.SupplierId, ip.InvoiceId });
             modelBuilder.Entity<Product>().Property(p => p.Price).HasColumnType("decimal(18,4)");
+            modelBuilder.Entity<Product>().Property(p => p.Barcode).HasMaxLength(64);
+            // Unique so barcode lookups (scan-in, CSV shipping-order matching) can safely assume
+            // at most one match. Unlike Postgres, a plain SQL Server unique index treats multiple
+            // NULLs as a duplicate-key violation - but EF Core's SQL Server provider automatically
+            // emits this as a filtered index (WHERE [Barcode] IS NOT NULL) because Barcode is a
+            // nullable property, so products without a barcode yet are unaffected. Confirmed via
+            // the generated EnforceUniqueProductBarcode migration.
+            modelBuilder.Entity<Product>().HasIndex(p => p.Barcode).IsUnique();
+            modelBuilder.Entity<Delivery>().Property(d => d.Status).HasConversion<string>();
+            modelBuilder.Entity<OrderItem>().HasKey(oi => new { oi.OrderId, oi.ProductId });
+            modelBuilder.Entity<OrderItem>().Property(oi => oi.UnitPrice).HasColumnType("decimal(18,4)");
+            modelBuilder.Entity<Order>().Property(o => o.Status).HasConversion<string>();
 
             // FakeData.Init(100);
             // // modelBuilder.Entity<User>().HasData(FakeData.Users);
@@ -38,6 +50,9 @@ namespace IOM.Data
         public DbSet<InvoiceSupplier> InvoiceSuppliers { get; set; }
         public DbSet<SupplierProduct> SupplierProducts { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Delivery> Deliveries { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
     }
 }

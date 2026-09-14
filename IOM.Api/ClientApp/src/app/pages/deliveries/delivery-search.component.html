@@ -1,0 +1,78 @@
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Search Deliveries</h3>
+  </div>
+  <div class="card-body">
+    <div class="form-row align-items-end">
+      <div class="form-group col-md-2">
+        <label>From</label>
+        <input type="date" class="form-control" [(ngModel)]="filters.from" name="from">
+      </div>
+      <div class="form-group col-md-2">
+        <label>To</label>
+        <input type="date" class="form-control" [(ngModel)]="filters.to" name="to">
+      </div>
+      <div class="form-group col-md-3">
+        <label>Supplier</label>
+        <app-supplier-search placeholder="Any supplier…" (selected)="onSupplierSelected($event)"></app-supplier-search>
+      </div>
+      <div class="form-group col-md-2">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="filters.status" name="status">
+          <option value="">Any</option>
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ status }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group col-md-2">
+        <label>Keyword</label>
+        <input type="text" class="form-control" [(ngModel)]="filters.keyword" name="keyword" placeholder="Notes…">
+      </div>
+      <div class="form-group col-md-1">
+        <button type="button" class="btn btn-primary btn-block" [disabled]="loading" (click)="search()">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-danger">{{ error }}</div>
+    }
+
+    @if (loading) {
+      <div class="text-center py-3"><span class="spinner-border text-primary"></span></div>
+    } @else if (searched && results.length === 0) {
+      <p class="text-muted mb-0">No deliveries match your search.</p>
+    } @else if (results.length > 0) {
+      <table class="table table-sm table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Supplier</th>
+            <th>Scheduled</th>
+            <th>Status</th>
+            <th>Timing</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (delivery of results; track delivery.id) {
+            <tr>
+              <td>{{ delivery.supplierName }}</td>
+              <td>{{ delivery.scheduledDate | date: 'short' }}</td>
+              <td><span class="badge" [class]="statusBadge(delivery.status)">{{ delivery.status }}</span></td>
+              <td>
+                @if (isPast(delivery)) {
+                  <span class="badge badge-light">Past</span>
+                } @else {
+                  <span class="badge badge-info">Upcoming</span>
+                }
+              </td>
+              <td>{{ delivery.notes || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

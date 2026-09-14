@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using IOM.Core.Models;
@@ -8,6 +9,7 @@ namespace IOM.Core.Repositories
     {
         Task<IEnumerable<Invoice>> GetAllWithInvoiceSupplierAndInvoiceItemsAsync();
         Task<IEnumerable<Invoice>> GetByInvoiceSupplierIdAsync(InvoiceSupplier invoiceSupplier);
+        Task<Invoice> GetByIdWithDetailsAsync(Guid id);
 
         // Task<IEnumerable<Invoice>> GetAllWithSupplierIdAsync(Guid id);
         // Task<Invoice> GetMostRecentWithSupplierByIdAsync(Guid id);

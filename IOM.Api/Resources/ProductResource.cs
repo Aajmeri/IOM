@@ -16,5 +16,11 @@ namespace IOM.Api.Resources
         public int Quantity { get; set; }
 
         public bool Visibility { get; set; }
+
+        public string Barcode { get; set; }
+
+        public Guid? SupplierId { get; set; }
+
+        public string SupplierName { get; set; }
     }
 }

@@ -9,5 +9,6 @@ namespace IOM.Core.Repositories
     {
         Task<IEnumerable<Item>> GetAllWithProductsAsync();
         Task<IEnumerable<Item>> GetByProductIdAsync(Guid productId);
+        Task<Item> GetByIdWithProductAsync(Guid id);
     }
 }

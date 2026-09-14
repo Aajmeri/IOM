@@ -1,0 +1,56 @@
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Delivery Calendar</h3>
+  </div>
+  <div class="card-body">
+    <div class="mb-2 small">
+      <span class="badge" style="background:#007bff;color:#fff;">Scheduled</span>
+      <span class="badge" style="background:#28a745;color:#fff;">Completed</span>
+      <span class="badge" style="background:#6c757d;color:#fff;">Cancelled</span>
+      <span class="badge" style="background:#fd7e14;color:#fff;">Delayed</span>
+    </div>
+    <full-calendar #calendar [options]="calendarOptions"></full-calendar>
+  </div>
+</div>
+
+@if (selectedDelivery) {
+  <div class="position-fixed d-flex align-items-center justify-content-center"
+       style="top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1100;"
+       (click)="closeModal()">
+    <div class="card" style="width: 420px; max-width: 92vw;" (click)="$event.stopPropagation()">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">{{ selectedDelivery.supplierName }}</h3>
+        <button type="button" class="close" (click)="closeModal()"><span>&times;</span></button>
+      </div>
+      <div class="card-body">
+        @if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        }
+        <div class="form-group">
+          <label>Scheduled Date/Time</label>
+          <input type="datetime-local" class="form-control" [(ngModel)]="editModel.scheduledDate" name="modalScheduledDate">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" [(ngModel)]="editModel.status" name="modalStatus">
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea class="form-control" [(ngModel)]="editModel.notes" name="modalNotes" rows="3"></textarea>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-primary" [disabled]="saving" (click)="saveDelivery()">
+            @if (saving) { <span class="spinner-border spinner-border-sm mr-1"></span> }
+            Save
+          </button>
+          <button type="button" class="btn btn-danger ml-2" [disabled]="saving" (click)="deleteDelivery()">Delete</button>
+          <button type="button" class="btn btn-secondary ml-2" (click)="closeModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

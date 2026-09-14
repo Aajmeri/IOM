@@ -17,7 +17,7 @@ namespace IOM.Service.Services
         }
         public async Task<Item> GetItemById(Guid id)
         {
-            return await _unitOfWork.Items.GetByIdAsync(id);
+            return await _unitOfWork.Items.GetByIdWithProductAsync(id);
         }
         public async Task<IEnumerable<Item>> GetItemsByProductId(Guid productId)
         {
@@ -26,6 +26,7 @@ namespace IOM.Service.Services
         public async Task<Item> CreateItem(Item newItem)
         {
             newItem.CreatedDate = DateTime.UtcNow;
+            newItem.Active = true;
             // newInvoice.CreatedById = someuser
 
             await _unitOfWork.Items.AddAsync(newItem);
@@ -34,12 +35,16 @@ namespace IOM.Service.Services
         }
         public async Task UpdateItem(Item itemTobeUpdated, Item item)
         {
-            itemTobeUpdated.ProductId = item.Id;
+            // Fixed from the pre-existing `itemTobeUpdated.ProductId = item.Id;` bug: that
+            // stomped ProductId with the (empty, since SaveItemResource has no Id) incoming Id,
+            // which would corrupt every update through the new ItemsApiController PUT endpoint.
+            itemTobeUpdated.ProductId = item.ProductId;
+            itemTobeUpdated.Quantity = item.Quantity;
+            itemTobeUpdated.ExpirationDate = item.ExpirationDate;
             if (itemTobeUpdated.InvoiceItem != null)
             {
                 itemTobeUpdated.InvoiceItem = item.InvoiceItem;
             }
-            itemTobeUpdated.Active = item.Active;
             itemTobeUpdated.UpdatedDate = DateTime.UtcNow;
             // itemTobeUpdated.UpdatedById = someuser
 

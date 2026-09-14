@@ -30,6 +30,13 @@ namespace IOM.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Item> GetByIdWithProductAsync(Guid id)
+        {
+            return await IOMContext.Items
+                .Include(i => i.Product)
+                .SingleOrDefaultAsync(i => i.Id == id);
+        }
+
         private IOMContext IOMContext
         {
             get { return Context as IOMContext; }

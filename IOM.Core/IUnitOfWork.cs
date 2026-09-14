@@ -11,6 +11,8 @@ namespace IOM.Core
         IItemRepository Items { get; }
         IInvoiceRepository Invoices { get; }
         IUserRepository Users { get; }
+        IDeliveryRepository Deliveries { get; }
+        IOrderRepository Orders { get; }
 
         Task<int> CommitAsync();
     }

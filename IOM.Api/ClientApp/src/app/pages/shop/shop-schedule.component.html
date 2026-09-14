@@ -1,0 +1,71 @@
+<div class="row">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Choose a Delivery Day</h3>
+        <a routerLink="/shop/basket" class="btn btn-secondary btn-sm">
+          <i class="fas fa-arrow-left mr-1"></i> Back to Basket
+        </a>
+      </div>
+      <div class="card-body">
+        @if (loadError) {
+          <div class="alert alert-danger">{{ loadError }}</div>
+        }
+        <div class="mb-2 small">
+          <span class="badge" style="background:#28a745;color:#fff;">Open</span>
+          <span class="badge" style="background:#dc3545;color:#fff;">Fully booked</span>
+        </div>
+        <full-calendar [options]="calendarOptions"></full-calendar>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          @if (!selectedDate) {
+            Pick an available day
+          } @else if (!selectedSlot) {
+            Available times — {{ selectedDate | date:'mediumDate' }}
+          } @else {
+            Confirm Order
+          }
+        </h3>
+      </div>
+      <div class="card-body">
+        @if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        }
+
+        @if (!selectedDate) {
+          <p class="text-muted">Click a green day on the calendar to see open delivery times.</p>
+        } @else if (!selectedSlot) {
+          <div class="d-flex flex-wrap gap-2">
+            @for (slot of selectedSlots; track slot.start) {
+              <button type="button" class="btn btn-outline-primary btn-sm mr-2 mb-2" (click)="pickSlot(slot)">
+                {{ slot.start | date:'shortTime' }} – {{ slot.end | date:'shortTime' }}
+              </button>
+            }
+          </div>
+        } @else {
+          <p>
+            <strong>{{ selectedDate | date:'mediumDate' }}</strong><br>
+            {{ selectedSlot.start | date:'shortTime' }} – {{ selectedSlot.end | date:'shortTime' }}
+            <button type="button" class="btn btn-link btn-sm p-0 ml-2" (click)="changeSlot()">change</button>
+          </p>
+          <div class="form-group">
+            <label>Order Notes (optional)</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="notes" name="notes"
+                      placeholder="Any special instructions for this delivery…"></textarea>
+          </div>
+          <p class="font-weight-bold">Total: {{ basket.total() | currency }}</p>
+          <button type="button" class="btn btn-primary" [disabled]="submitting" (click)="submitOrder()">
+            @if (submitting) { <span class="spinner-border spinner-border-sm mr-1"></span> }
+            Submit Order
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

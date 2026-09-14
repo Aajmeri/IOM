@@ -8,7 +8,12 @@ export interface Product {
   description: string;
   price: number;
   quantity: number;
-  visibility: boolean;
+  // The Client role gets a reduced shape from the API (no visibility/
+  // barcode/supplier info) at these same endpoints, so these are optional.
+  visibility?: boolean;
+  barcode?: string | null;
+  supplierId?: string | null;
+  supplierName?: string | null;
 }
 
 export interface SaveProduct {
@@ -17,6 +22,8 @@ export interface SaveProduct {
   price: number;
   quantity: number;
   visibility: boolean;
+  barcode: string | null;
+  supplierId: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -31,6 +38,10 @@ export class ProductService {
 
   getById(id: string): Observable<Product> {
     return this.http.get<Product>(`${this.base}/${id}`);
+  }
+
+  getByBarcode(barcode: string): Observable<Product> {
+    return this.http.get<Product>(`${this.base}/by-barcode/${encodeURIComponent(barcode)}`);
   }
 
   create(data: SaveProduct): Observable<Product> {

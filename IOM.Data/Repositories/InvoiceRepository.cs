@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,21 +12,29 @@ namespace IOM.Data.Repositories
     {
         public InvoiceRepository(IOMContext dbContext) : base(dbContext)
         {
-            
+
         }
 
         public async Task<IEnumerable<Invoice>> GetAllWithInvoiceSupplierAndInvoiceItemsAsync()
         {
             return await IOMContext.Invoices
-                .Include(i => i.InvoiceSupplier)
-                .Include(i => i.InvoiceItem)   
+                .Include(i => i.InvoiceSupplier).ThenInclude(iis => iis.Supplier)
+                .Include(i => i.InvoiceItem).ThenInclude(ii => ii.Item).ThenInclude(item => item.Product)
                 .ToListAsync();
+        }
+
+        public async Task<Invoice> GetByIdWithDetailsAsync(Guid id)
+        {
+            return await IOMContext.Invoices
+                .Include(i => i.InvoiceSupplier).ThenInclude(iis => iis.Supplier)
+                .Include(i => i.InvoiceItem).ThenInclude(ii => ii.Item).ThenInclude(item => item.Product)
+                .SingleOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<IEnumerable<Invoice>> GetByInvoiceSupplierIdAsync(InvoiceSupplier invoiceSupplier)
         {
             return await IOMContext.Invoices
-                .Where(i => i.InvoiceSupplier == invoiceSupplier) 
+                .Where(i => i.InvoiceSupplier == invoiceSupplier)
                 .ToListAsync();
         }
 

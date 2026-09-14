@@ -1,0 +1,138 @@
+<div class="row">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Upload Shipping Order</h3>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small">
+          CSV columns: <code>Barcode,ProductName,Quantity,ExpirationDate,Price</code>.
+          Barcode is required on every row. ProductName is required only when the barcode doesn't
+          match an existing product. Quantity must be a positive whole number.
+          ExpirationDate is optional (format <code>yyyy-MM-dd</code>). Price is optional and only
+          used when creating a new product.
+        </p>
+
+        @if (uploadError) {
+          <div class="alert alert-danger">{{ uploadError }}</div>
+        }
+
+        <div class="form-group">
+          <label>Supplier <span class="text-danger">*</span></label>
+          <app-supplier-search
+            placeholder="Search supplier by name…"
+            [required]="true"
+            (selected)="onSupplierSelected($event)">
+          </app-supplier-search>
+        </div>
+
+        <div class="form-group">
+          <label>Invoice Number (optional)</label>
+          <input type="text" class="form-control" [(ngModel)]="invoiceNumber" name="invoiceNumber">
+        </div>
+
+        <div class="form-group">
+          <label>CSV File <span class="text-danger">*</span></label>
+          <input type="file" class="form-control-file" accept=".csv" (change)="onFileChange($event)">
+        </div>
+
+        <button type="button" class="btn btn-primary" [disabled]="uploading || !selectedFile || !supplierId" (click)="upload()">
+          @if (uploading) { <span class="spinner-border spinner-border-sm mr-1"></span> }
+          Upload
+        </button>
+
+        @if (uploadResult) {
+          <div class="alert alert-success mt-3 mb-0">
+            <div>Products created: {{ uploadResult.productsCreated }}</div>
+            <div>Products matched: {{ uploadResult.productsMatched }}</div>
+            <div>Items created: {{ uploadResult.itemsCreated }}</div>
+          </div>
+          @if (uploadResult.rowErrors.length > 0) {
+            <div class="alert alert-warning mt-2 mb-0">
+              <strong>Row errors:</strong>
+              <ul class="mb-0">
+                @for (rowError of uploadResult.rowErrors; track rowError) {
+                  <li>{{ rowError }}</li>
+                }
+              </ul>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Shipping Orders</h3>
+      </div>
+      <div class="card-body">
+        @if (loading) {
+          <div class="text-center py-3"><span class="spinner-border text-primary"></span></div>
+        } @else if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        } @else if (invoices.length === 0) {
+          <p class="text-muted mb-0">No shipping orders yet.</p>
+        } @else {
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Number</th>
+                <th>Supplier</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (invoice of invoices; track invoice.id) {
+                <tr>
+                  <td>{{ invoice.number }}</td>
+                  <td>{{ invoice.supplierName }}</td>
+                  <td>{{ invoice.items.length }}</td>
+                  <td>{{ invoice.total | currency }}</td>
+                  <td>{{ invoice.createdDate | date: 'shortDate' }}</td>
+                  <td>
+                    <button class="btn btn-secondary btn-xs" (click)="toggleExpand(invoice)">
+                      <i class="fas" [class.fa-chevron-down]="expandedInvoiceId !== invoice.id" [class.fa-chevron-up]="expandedInvoiceId === invoice.id"></i>
+                      View
+                    </button>
+                    <button class="btn btn-danger btn-xs ml-1" (click)="delete(invoice.id)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                @if (expandedInvoiceId === invoice.id) {
+                  <tr>
+                    <td colspan="6" class="bg-light">
+                      <table class="table table-sm mb-0">
+                        <thead>
+                          <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Expiration</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (item of invoice.items; track item.itemId) {
+                            <tr>
+                              <td>{{ item.productName }}</td>
+                              <td>{{ item.quantity }}</td>
+                              <td>{{ item.expirationDate ? (item.expirationDate | date: 'shortDate') : '—' }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+</div>

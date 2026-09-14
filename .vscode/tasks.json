@@ -11,7 +11,11 @@
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "publish",
@@ -32,11 +36,66 @@
             "args": [
                 "watch",
                 "run",
+                "--project",
                 "${workspaceFolder}/IOM.Api/IOM.Api.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "ng serve",
+            "command": "npm",
+            "type": "process",
+            "args": [
+                "run",
+                "start",
+                "--prefix",
+                "${workspaceFolder}/IOM.Api/ClientApp"
+            ],
+            "problemMatcher": "$tsc-watch",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "ng build",
+            "command": "npm",
+            "type": "process",
+            "args": [
+                "run",
+                "build",
+                "--prefix",
+                "${workspaceFolder}/IOM.Api/ClientApp"
+            ],
+            "problemMatcher": "$tsc",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "ng build:watch",
+            "command": "npm",
+            "type": "process",
+            "args": [
+                "run",
+                "watch",
+                "--prefix",
+                "${workspaceFolder}/IOM.Api/ClientApp"
+            ],
+            "problemMatcher": "$tsc-watch",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
         }
     ]
 }

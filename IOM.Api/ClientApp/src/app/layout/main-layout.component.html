@@ -33,44 +33,82 @@
     <div class="sidebar">
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-          <li class="nav-item">
-            <a routerLink="/products" routerLinkActive="active" class="nav-link">
-              <i class="nav-icon fas fa-box"></i>
-              <p>Products</p>
-            </a>
-          </li>
-          @if (auth.isAdmin()) {
+          @if (auth.isClient()) {
             <li class="nav-item">
-              <a routerLink="/users" routerLinkActive="active" class="nav-link">
-                <i class="nav-icon fas fa-users"></i>
-                <p>Users</p>
+              <a routerLink="/shop" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-store"></i>
+                <p>Shop</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/shop/basket" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-shopping-basket"></i>
+                <p>
+                  Basket
+                  @if (basket.count() > 0) {
+                    <span class="badge badge-info right">{{ basket.count() }}</span>
+                  }
+                </p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/shop/orders" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-receipt"></i>
+                <p>My Orders</p>
+              </a>
+            </li>
+          } @else {
+            <li class="nav-item">
+              <a routerLink="/products" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-box"></i>
+                <p>Products</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/scan" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-barcode"></i>
+                <p>Scan In</p>
+              </a>
+            </li>
+            @if (auth.isAdmin()) {
+              <li class="nav-item">
+                <a routerLink="/users" routerLinkActive="active" class="nav-link">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>Users</p>
+                </a>
+              </li>
+            }
+            <li class="nav-item">
+              <a routerLink="/suppliers" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-industry"></i>
+                <p>Suppliers</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/schedule" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                <p>Schedule Shipping</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/orders" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-shopping-cart"></i>
+                <p>Orders</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/deliveries" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-truck"></i>
+                <p>Deliveries</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a routerLink="/order-approvals" routerLinkActive="active" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-check"></i>
+                <p>Order Approvals</p>
               </a>
             </li>
           }
-          <li class="nav-item">
-            <a routerLink="/suppliers" routerLinkActive="active" class="nav-link">
-              <i class="nav-icon fas fa-industry"></i>
-              <p>Suppliers</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/schedule" routerLinkActive="active" class="nav-link">
-              <i class="nav-icon fas fa-calendar-alt"></i>
-              <p>Schedule Shipping</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/orders" routerLinkActive="active" class="nav-link">
-              <i class="nav-icon fas fa-shopping-cart"></i>
-              <p>Orders</p>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a routerLink="/deliveries" routerLinkActive="active" class="nav-link">
-              <i class="nav-icon fas fa-truck"></i>
-              <p>Deliveries</p>
-            </a>
-          </li>
         </ul>
       </nav>
     </div>

@@ -13,6 +13,8 @@ namespace IOM.Data
         private ProductRepository _productRepository;
         private SupplierRepository _supplierRepository;
         private UserRepository _userRepository;
+        private DeliveryRepository _deliveryRepository;
+        private OrderRepository _orderRepository;
 
 
         public UnitOfWork(IOMContext context)
@@ -25,6 +27,8 @@ namespace IOM.Data
         public IProductRepository Products => _productRepository = _productRepository ?? new ProductRepository(_context);
         public ISupplierRepsoitory Suppliers => _supplierRepository = _supplierRepository ?? new SupplierRepository(_context);
         public IUserRepository Users => _userRepository = _userRepository ?? new UserRepository(_context);
+        public IDeliveryRepository Deliveries => _deliveryRepository = _deliveryRepository ?? new DeliveryRepository(_context);
+        public IOrderRepository Orders => _orderRepository = _orderRepository ?? new OrderRepository(_context);
 
       public async Task<int> CommitAsync()
         {

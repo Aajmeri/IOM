@@ -1,0 +1,102 @@
+<div class="row">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Schedule Shipping</h3>
+      </div>
+      <div class="card-body">
+        @if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        }
+        <form (ngSubmit)="submit()" #f="ngForm">
+          <div class="form-group">
+            <label>Supplier <span class="text-danger">*</span></label>
+            <app-supplier-search
+              placeholder="Search supplier by name…"
+              [required]="true"
+              (selected)="onSupplierSelected($event)">
+            </app-supplier-search>
+          </div>
+          <div class="form-group">
+            <label>Scheduled Date/Time <span class="text-danger">*</span></label>
+            <input type="datetime-local" class="form-control" [(ngModel)]="model.scheduledDate" name="scheduledDate" required>
+          </div>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea class="form-control" [(ngModel)]="model.notes" name="notes" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" [disabled]="saving || !model.supplierId">
+            @if (saving) { <span class="spinner-border spinner-border-sm mr-1"></span> }
+            Schedule Delivery
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Upcoming Scheduled Deliveries</h3>
+      </div>
+      <div class="card-body">
+        @if (loading) {
+          <div class="text-center py-3"><span class="spinner-border text-primary"></span></div>
+        } @else if (loadError) {
+          <div class="alert alert-danger">{{ loadError }}</div>
+        } @else if (upcoming.length === 0) {
+          <p class="text-muted mb-0">No upcoming deliveries scheduled.</p>
+        } @else {
+          <table class="table table-sm table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>Supplier</th>
+                <th>Scheduled</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (delivery of upcoming; track delivery.id) {
+                <tr>
+                  <td>{{ delivery.supplierName }}</td>
+                  <td>
+                    @if (editingId === delivery.id) {
+                      <input type="datetime-local" class="form-control form-control-sm" [(ngModel)]="editModel.scheduledDate" name="editScheduledDate">
+                    } @else {
+                      {{ delivery.scheduledDate | date: 'short' }}
+                    }
+                  </td>
+                  <td>
+                    @if (editingId === delivery.id) {
+                      <input type="text" class="form-control form-control-sm" [(ngModel)]="editModel.notes" name="editNotes">
+                    } @else {
+                      {{ delivery.notes || '—' }}
+                    }
+                  </td>
+                  <td>
+                    @if (editingId === delivery.id) {
+                      <button class="btn btn-success btn-xs" [disabled]="savingEdit" (click)="saveEdit(delivery)">
+                        <i class="fas fa-check"></i>
+                      </button>
+                      <button class="btn btn-secondary btn-xs ml-1" (click)="cancelEdit()">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    } @else {
+                      <button class="btn btn-warning btn-xs" (click)="startEdit(delivery)">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn btn-danger btn-xs ml-1" (click)="remove(delivery)">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+</div>

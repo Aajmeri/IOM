@@ -9,6 +9,7 @@ namespace IOM.Core.Services
     {
         Task<Product> GetProductById(Guid id);
         Task<IEnumerable<Product>> GetAllWithSupplierProduct();
+        Task<Product> GetByBarcode(string barcode);
         Task<Product> CreateProduct(Product newProduct);
         Task UpdateProduct(Product productToBeUpdated, Product product);
 

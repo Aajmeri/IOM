@@ -50,6 +50,10 @@ export class AuthService {
     return this.currentUser()?.role === 'Admin';
   }
 
+  isClient(): boolean {
+    return this.currentUser()?.role === 'Client';
+  }
+
   canManageProducts(): boolean {
     const role = this.currentUser()?.role;
     return role === 'Admin' || role === 'Warehouse';

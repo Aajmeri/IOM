@@ -1,0 +1,16 @@
+<div class="mb-3">
+  <div class="btn-group" role="group">
+    <button type="button" class="btn" [class.btn-primary]="view === 'search'" [class.btn-outline-primary]="view !== 'search'" (click)="view = 'search'">
+      <i class="fas fa-search mr-1"></i> Search
+    </button>
+    <button type="button" class="btn" [class.btn-primary]="view === 'calendar'" [class.btn-outline-primary]="view !== 'calendar'" (click)="view = 'calendar'">
+      <i class="fas fa-calendar mr-1"></i> Calendar
+    </button>
+  </div>
+</div>
+
+@if (view === 'search') {
+  <app-delivery-search></app-delivery-search>
+} @else {
+  <app-delivery-calendar></app-delivery-calendar>
+}

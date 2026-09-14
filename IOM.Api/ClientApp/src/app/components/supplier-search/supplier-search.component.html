@@ -1,0 +1,34 @@
+<div class="supplier-search position-relative">
+  <input
+    type="text"
+    class="form-control"
+    [(ngModel)]="query"
+    name="supplierSearch"
+    [placeholder]="placeholder"
+    [required]="required"
+    [disabled]="disabled"
+    (input)="onInput()"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    autocomplete="off">
+  @if (searching) {
+    <small class="form-text text-muted">Searching…</small>
+  }
+  @if (showDropdown && results.length > 0) {
+    <div class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; max-height: 220px; overflow-y: auto;">
+      @for (supplier of results; track supplier.id) {
+        <button
+          type="button"
+          class="list-group-item list-group-item-action"
+          (mousedown)="$event.preventDefault(); choose(supplier)">
+          {{ supplier.name }}
+        </button>
+      }
+    </div>
+  }
+  @if (showDropdown && !searching && results.length === 0 && query.trim().length > 0) {
+    <div class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050;">
+      <span class="list-group-item text-muted">No suppliers found</span>
+    </div>
+  }
+</div>

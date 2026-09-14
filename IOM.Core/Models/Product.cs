@@ -23,6 +23,9 @@ namespace IOM.Core.Models
 
         public bool Visibility { get; set; } = true;
 
+        [MaxLength(64)]
+        public string Barcode { get; set; }
+
         public IList<SupplierProduct> SupplierProduct { get; set; }
 
     }

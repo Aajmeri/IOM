@@ -23,6 +23,16 @@ namespace IOM.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Supplier>> SearchByNameAsync(string query, int limit)
+        {
+            var normalized = (query ?? string.Empty).ToLower();
+            return await IOMContext.Suppliers
+                .Where(s => s.Active == true && s.Name.ToLower().Contains(normalized))
+                .OrderBy(s => s.Name)
+                .Take(limit)
+                .ToListAsync();
+        }
+
  
         private IOMContext IOMContext
         {

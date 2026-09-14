@@ -1,3 +1,5 @@
+using System;
+
 namespace IOM.Api.Resources
 {
     public class SaveProductResource
@@ -11,5 +13,9 @@ namespace IOM.Api.Resources
         public int Quantity { get; set; }
 
         public bool Visibility { get; set; } = true;
+
+        public string Barcode { get; set; }
+
+        public Guid SupplierId { get; set; }
     }
 }
