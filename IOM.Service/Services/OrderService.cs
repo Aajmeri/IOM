@@ -14,11 +14,13 @@ namespace IOM.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
+        private readonly IPaymentService _paymentService;
 
-        public OrderService(IUnitOfWork unitOfWork, IConfiguration configuration)
+        public OrderService(IUnitOfWork unitOfWork, IConfiguration configuration, IPaymentService paymentService)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
+            _paymentService = paymentService;
         }
 
         public async Task<IEnumerable<Order>> GetAll()
@@ -37,6 +39,149 @@ namespace IOM.Service.Services
         }
 
         public async Task<(Order order, string error)> CreateOrder(
+            Guid clientId,
+            DateTime scheduledDate,
+            string notes,
+            IEnumerable<(Guid productId, int quantity)> items,
+            CardDetails card)
+        {
+            if (card == null)
+            {
+                return (null, "Payment details are required.");
+            }
+
+            var (order, error) = await BuildNewOrder(clientId, scheduledDate, notes, items);
+            if (error != null)
+            {
+                return (null, error);
+            }
+
+            // The amount charged is always computed here from the snapshotted line prices - never
+            // taken from the client - and the card is only charged once every other check above
+            // has passed, so a validation failure never leaves a charge behind.
+            var amount = OrderTotal(order);
+            var charge = await _paymentService.ChargeAsync(amount, card, order.Number);
+            if (!charge.Succeeded)
+            {
+                return (null, $"Payment failed: {charge.DeclineReason}");
+            }
+
+            order.Payment = NewPayment(order, amount, charge, card);
+
+            try
+            {
+                await _unitOfWork.Orders.AddAsync(order);
+                await _unitOfWork.CommitAsync();
+            }
+            catch
+            {
+                // The card was charged but the order couldn't be saved - give the money back
+                // rather than leave the client paying for an order that doesn't exist.
+                await _paymentService.RefundAsync(charge.TransactionId, amount);
+                throw;
+            }
+
+            var created = await _unitOfWork.Orders.GetByIdWithDetailsAsync(order.Id);
+            return (created, null);
+        }
+
+        public async Task<(Order order, string error)> CreateOrderPayLater(
+            Guid clientId,
+            DateTime scheduledDate,
+            string notes,
+            IEnumerable<(Guid productId, int quantity)> items)
+        {
+            var (order, error) = await BuildNewOrder(clientId, scheduledDate, notes, items);
+            if (error != null)
+            {
+                return (null, error);
+            }
+
+            await _unitOfWork.Orders.AddAsync(order);
+            await _unitOfWork.CommitAsync();
+
+            var created = await _unitOfWork.Orders.GetByIdWithDetailsAsync(order.Id);
+            return (created, null);
+        }
+
+        public async Task<(Order order, string error)> PayOrder(Order order, CardDetails card)
+        {
+            if (card == null)
+            {
+                return (null, "Payment details are required.");
+            }
+
+            if (order.Payment != null)
+            {
+                return (null, "This order has already been paid.");
+            }
+
+            if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Approved)
+            {
+                return (null, "Only pending or approved orders can be paid.");
+            }
+
+            // Charged from the lines' snapshotted UnitPrice (the price when the order was placed
+            // or the line was added), not today's product price - see OrderItem.UnitPrice.
+            var amount = OrderTotal(order);
+            var charge = await _paymentService.ChargeAsync(amount, card, order.Number);
+            if (!charge.Succeeded)
+            {
+                return (null, $"Payment failed: {charge.DeclineReason}");
+            }
+
+            order.Payment = NewPayment(order, amount, charge, card);
+            order.UpdatedDate = DateTime.UtcNow;
+
+            try
+            {
+                await _unitOfWork.CommitAsync();
+            }
+            catch
+            {
+                await _paymentService.RefundAsync(charge.TransactionId, amount);
+                throw;
+            }
+
+            var paid = await _unitOfWork.Orders.GetByIdWithDetailsAsync(order.Id);
+            return (paid, null);
+        }
+
+        public async Task<(Order order, string error)> RescheduleOrder(Order order, DateTime newScheduledDate, string reason)
+        {
+            if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Approved)
+            {
+                return (null, "Only pending or approved orders can be rescheduled.");
+            }
+
+            if (order.ScheduledDate == newScheduledDate)
+            {
+                return (null, "The order is already scheduled for that time.");
+            }
+
+            // Same rules a client booking faces (aligned slot, lead time, advance window,
+            // capacity). This order never counts against the new slot's capacity, since it is
+            // never already in that slot (checked above).
+            var slotError = await ValidateSlot(newScheduledDate);
+            if (slotError != null)
+            {
+                return (null, slotError);
+            }
+
+            order.ScheduledDate = newScheduledDate;
+            if (!string.IsNullOrWhiteSpace(reason))
+            {
+                order.AdminNotes = reason.Trim();
+            }
+            order.UpdatedDate = DateTime.UtcNow;
+            await _unitOfWork.CommitAsync();
+
+            return (order, null);
+        }
+
+        // Shared by both checkout paths: validates items and slot, loads the products and builds
+        // an unsaved Pending order with each line's UnitPrice snapshotted from the current price.
+        private async Task<(Order order, string error)> BuildNewOrder(
             Guid clientId,
             DateTime scheduledDate,
             string notes,
@@ -87,13 +232,27 @@ namespace IOM.Service.Services
                 }).ToList()
             };
             order.Number = $"ORD-{order.CreatedDate:yyyyMMddHHmmss}";
-
-            await _unitOfWork.Orders.AddAsync(order);
-            await _unitOfWork.CommitAsync();
-
-            var created = await _unitOfWork.Orders.GetByIdWithDetailsAsync(order.Id);
-            return (created, null);
+            return (order, null);
         }
+
+        private static decimal OrderTotal(Order order)
+            => order.OrderItems?.Sum(oi => oi.UnitPrice * oi.Quantity) ?? 0m;
+
+        // Id is deliberately left unset so EF generates it on insert. When a Payment is attached
+        // to an already-tracked order (PayOrder), EF treats a navigation entity whose Guid key is
+        // already set as an existing row and would UPDATE instead of INSERT.
+        private static Payment NewPayment(Order order, decimal amount, PaymentResult charge, CardDetails card) => new Payment
+        {
+            OrderId = order.Id,
+            Amount = amount,
+            Status = PaymentStatus.Paid,
+            Method = "Card",
+            CardBrand = charge.CardBrand,
+            CardLast4 = charge.CardLast4,
+            CardholderName = card.CardholderName?.Trim(),
+            TransactionId = charge.TransactionId,
+            PaidDate = DateTime.UtcNow
+        };
 
         public async Task<(Order order, string error)> UpdateOrder(
             Order existing,
@@ -198,6 +357,7 @@ namespace IOM.Service.Services
             order.Status = OrderStatus.Rejected;
             order.AdminNotes = adminNotes;
             order.UpdatedDate = DateTime.UtcNow;
+            await RefundIfPaid(order);
             await _unitOfWork.CommitAsync();
             return (order, null);
         }
@@ -206,7 +366,23 @@ namespace IOM.Service.Services
         {
             order.Status = OrderStatus.Cancelled;
             order.UpdatedDate = DateTime.UtcNow;
+            await RefundIfPaid(order);
             await _unitOfWork.CommitAsync();
+        }
+
+        // Rejected/cancelled orders are never fulfilled, so the checkout charge is returned in
+        // full. If the gateway refuses the refund the payment stays Paid, which keeps it visible
+        // to staff on the order rather than silently marking money as returned.
+        private async Task RefundIfPaid(Order order)
+        {
+            var payment = order.Payment;
+            if (payment == null || payment.Status != PaymentStatus.Paid) return;
+
+            if (await _paymentService.RefundAsync(payment.TransactionId, payment.Amount))
+            {
+                payment.Status = PaymentStatus.Refunded;
+                payment.RefundedDate = DateTime.UtcNow;
+            }
         }
 
         private async Task<string> ValidateSlot(DateTime scheduledDate)

@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using IOM.Api.Mapping;
 using IOM.Core.Models;
 using IOM.Core.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,17 +15,19 @@ namespace IOM.Api.Controllers.Api
     public class UsersApiController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly UserMapper _mapper;
 
-        public UsersApiController(IUserService userService)
+        public UsersApiController(IUserService userService, UserMapper mapper)
         {
             _userService = userService;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var users = await _userService.GetAllAsync();
-            return Ok(users);
+            return Ok(_mapper.ToResource(users));
         }
 
         [HttpGet("{id}")]
@@ -32,7 +35,7 @@ namespace IOM.Api.Controllers.Api
         {
             var user = await _userService.GetByIdAsync(id);
             if (user == null) return NotFound();
-            return Ok(user);
+            return Ok(_mapper.ToResource(user));
         }
 
         [HttpPut("{id}")]

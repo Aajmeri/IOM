@@ -15,6 +15,8 @@ namespace IOM.Api.Resources
         public string AdminNotes { get; set; }
         public decimal Total { get; set; }
         public DateTime CreatedDate { get; set; }
+        // "Paid", "Refunded", or "Unpaid" (pay-later orders, and orders placed before checkout took payment).
+        public string PaymentStatus { get; set; }
         public List<OrderItemSummary> Items { get; set; } = new List<OrderItemSummary>();
     }
 

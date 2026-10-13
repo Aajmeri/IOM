@@ -17,3 +17,25 @@ body:has(.login-box) {
   width: 360px;
   max-width: 92vw;
 }
+
+/* Printing (e.g. the order receipt): drop the AdminLTE chrome and anything marked .no-print so
+   only the page content is printed, full-width. */
+@media print {
+  .main-header,
+  .main-sidebar,
+  .main-footer,
+  .control-sidebar,
+  .no-print {
+    display: none !important;
+  }
+
+  body,
+  .content-wrapper {
+    background: #fff !important;
+  }
+
+  .content-wrapper {
+    margin-left: 0 !important;
+    min-height: 0 !important;
+  }
+}

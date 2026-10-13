@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CurrencyPipe, DatePipe, LowerCasePipe } from '@angular/common';
 import { OrderService, Order, OrderStatus, SaveOrder, SaveOrderItem } from '../../services/order.service';
+import { AvailabilityService, Slot } from '../../services/availability.service';
 
 interface EditableItem extends SaveOrderItem {
   productName: string;
@@ -29,10 +30,21 @@ export class OrderDetailComponent implements OnInit {
   deciding = false;
   resultMessage = '';
 
+  // Reschedule (staff picks a new open slot; the client is emailed).
+  rescheduleDate = '';
+  rescheduleSlots: Slot[] = [];
+  rescheduleSlot: Slot | null = null;
+  rescheduleReason = '';
+  loadingSlots = false;
+  rescheduling = false;
+  rescheduleMessage = '';
+  rescheduleError = '';
+
   private orderId = '';
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private orderService = inject(OrderService);
+  private availabilityService = inject(AvailabilityService);
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.params['id'];
@@ -68,6 +80,68 @@ export class OrderDetailComponent implements OnInit {
 
   get isPending(): boolean {
     return this.order?.status === 'Pending';
+  }
+
+  /** Rejected/cancelled orders are final; pending and approved ones can move to another slot. */
+  get canReschedule(): boolean {
+    return this.order?.status === 'Pending' || this.order?.status === 'Approved';
+  }
+
+  /** Loads the chosen day's slots, keeping only the ones that are still open. */
+  loadRescheduleSlots(): void {
+    this.rescheduleSlots = [];
+    this.rescheduleSlot = null;
+    this.rescheduleError = '';
+    if (!this.rescheduleDate) return;
+
+    this.loadingSlots = true;
+    this.availabilityService.getRange(this.rescheduleDate, this.rescheduleDate).subscribe({
+      next: days => {
+        const day = days.find(d => d.date.substring(0, 10) === this.rescheduleDate);
+        this.rescheduleSlots = (day?.slots ?? []).filter(s => s.available);
+        this.loadingSlots = false;
+      },
+      error: err => {
+        this.rescheduleError = err.error?.message ?? 'Failed to load delivery slots for that day.';
+        this.loadingSlots = false;
+      }
+    });
+  }
+
+  reschedule(): void {
+    if (!this.order) return;
+    this.rescheduleMessage = '';
+    this.rescheduleError = '';
+    if (!this.rescheduleSlot) {
+      this.rescheduleError = 'Choose a new delivery slot.';
+      return;
+    }
+
+    this.rescheduling = true;
+    const reason = this.rescheduleReason.trim() || undefined;
+    this.orderService.reschedule(this.order.id, this.rescheduleSlot.start, reason).subscribe({
+      next: order => {
+        this.order = order;
+        this.scheduledDate = order.scheduledDate;
+        this.adminNotes = order.adminNotes ?? '';
+        this.rescheduling = false;
+        this.rescheduleMessage = `Order ${order.number} was moved to the new delivery slot and the client has been emailed.`;
+        this.rescheduleDate = '';
+        this.rescheduleSlots = [];
+        this.rescheduleSlot = null;
+        this.rescheduleReason = '';
+      },
+      error: err => {
+        this.rescheduleError = err.error?.message ?? 'Failed to reschedule the order.';
+        this.rescheduling = false;
+      }
+    });
+  }
+
+  /** Earliest date the date picker offers (today, local time). */
+  get today(): string {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   }
 
   removeItem(productId: string): void {

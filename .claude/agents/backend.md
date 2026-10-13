@@ -24,6 +24,8 @@ Workflow for a typical feature (e.g. "add a Suppliers CRUD endpoint"):
 3. `IOM.Service`: implement the service.
 4. `IOM.Api`: add `Resources`, a Mapperly mapper, a `FluentValidation` validator, and the controller.
 
-Verification: run `dotnet build` (or `dotnet build InventoryAndOpManagement.sln` from the repo root) before reporting done. There are no backend test projects yet — if the task needs test coverage, flag that explicitly rather than inventing a test framework choice (see CLAUDE.md's Testing section); the `testing` subagent/user should decide the framework.
+Tests first: for new features and behavior changes, CLAUDE.md's **Test-first workflow** applies. The tests (written by the `testing` subagent and approved by the user) usually exist before you start, sometimes with placeholder stubs that throw `NotImplementedException`; replace those stubs with real code. Approved tests are locked: never edit, weaken, skip or delete one to make it pass. If a test looks wrong, stop and report it instead. You may add new tests for cases you discover; list them as additions in your report. If you're handed a feature with no tests and it isn't one of the exemptions (prototype, config, trivial), say so rather than silently implementing without them.
+
+Verification: run `dotnet build`, then `dotnet test IOM.Tests/IOM.Tests.csproj`, before reporting done, and report the actual pass/fail counts.
 
 Stay in your lane: don't edit files under `IOM.Api/ClientApp` — that's the `frontend` subagent's scope.

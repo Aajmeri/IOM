@@ -19,6 +19,7 @@ namespace IOM.Data.Repositories
             return await IOMContext.Orders
                 .Include(o => o.Client)
                 .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment)
                 .OrderByDescending(o => o.CreatedDate)
                 .ToListAsync();
         }
@@ -28,6 +29,7 @@ namespace IOM.Data.Repositories
             return await IOMContext.Orders
                 .Include(o => o.Client)
                 .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment)
                 .SingleOrDefaultAsync(o => o.Id == id);
         }
 
@@ -36,6 +38,7 @@ namespace IOM.Data.Repositories
             return await IOMContext.Orders
                 .Include(o => o.Client)
                 .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                .Include(o => o.Payment)
                 .Where(o => o.ClientId == clientId)
                 .OrderByDescending(o => o.CreatedDate)
                 .ToListAsync();

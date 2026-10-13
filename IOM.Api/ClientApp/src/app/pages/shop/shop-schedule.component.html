@@ -3,17 +3,28 @@
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title">Choose a Delivery Day</h3>
-        <a routerLink="/shop/basket" class="btn btn-secondary btn-sm">
-          <i class="fas fa-arrow-left mr-1"></i> Back to Basket
-        </a>
+        <div>
+          <a routerLink="/shop" class="btn btn-secondary btn-sm">
+            <i class="fas fa-box mr-1"></i> Product List
+          </a>
+          <a routerLink="/shop/basket" class="btn btn-secondary btn-sm ml-1">
+            <i class="fas fa-arrow-left mr-1"></i> Back to Basket
+          </a>
+        </div>
       </div>
       <div class="card-body">
         @if (loadError) {
           <div class="alert alert-danger">{{ loadError }}</div>
         }
+        @if (basketEmpty) {
+          <div class="alert alert-warning">
+            Your basket is empty. You can browse delivery availability below, but you'll need to
+            <a routerLink="/shop">add items to your basket</a> before you can submit an order.
+          </div>
+        }
         <div class="mb-2 small">
           <span class="badge" style="background:#28a745;color:#fff;">Open</span>
-          <span class="badge" style="background:#dc3545;color:#fff;">Fully booked</span>
+          <span class="badge" style="background:#adb5bd;color:#fff;">Fully booked</span>
         </div>
         <full-calendar [options]="calendarOptions"></full-calendar>
       </div>
@@ -39,30 +50,38 @@
         }
 
         @if (!selectedDate) {
-          <p class="text-muted">Click a green day on the calendar to see open delivery times.</p>
+          <p class="text-muted">Click a day on the calendar to see delivery times.</p>
         } @else if (!selectedSlot) {
-          <div class="d-flex flex-wrap gap-2">
-            @for (slot of selectedSlots; track slot.start) {
-              <button type="button" class="btn btn-outline-primary btn-sm mr-2 mb-2" (click)="pickSlot(slot)">
-                {{ slot.start | date:'shortTime' }} – {{ slot.end | date:'shortTime' }}
-              </button>
-            }
-          </div>
+          @if (selectedSlots.length === 0) {
+            <p class="text-muted mb-0">No delivery times are configured for this day.</p>
+          } @else {
+            <div class="d-flex flex-wrap gap-2">
+              @for (slot of selectedSlots; track slot.start) {
+                <button type="button" class="btn btn-sm mr-2 mb-2"
+                        [class.btn-outline-primary]="slot.available"
+                        [class.btn-outline-secondary]="!slot.available"
+                        [disabled]="!slot.available"
+                        [title]="slot.available ? '' : 'Fully booked'"
+                        (click)="pickSlot(slot)">
+                  {{ slot.start | date:'shortTime' }} – {{ slot.end | date:'shortTime' }}
+                </button>
+              }
+            </div>
+          }
         } @else {
           <p>
             <strong>{{ selectedDate | date:'mediumDate' }}</strong><br>
             {{ selectedSlot.start | date:'shortTime' }} – {{ selectedSlot.end | date:'shortTime' }}
             <button type="button" class="btn btn-link btn-sm p-0 ml-2" (click)="changeSlot()">change</button>
           </p>
-          <div class="form-group">
-            <label>Order Notes (optional)</label>
-            <textarea class="form-control" rows="3" [(ngModel)]="notes" name="notes"
-                      placeholder="Any special instructions for this delivery…"></textarea>
-          </div>
           <p class="font-weight-bold">Total: {{ basket.total() | currency }}</p>
-          <button type="button" class="btn btn-primary" [disabled]="submitting" (click)="submitOrder()">
-            @if (submitting) { <span class="spinner-border spinner-border-sm mr-1"></span> }
-            Submit Order
+          @if (basketEmpty) {
+            <div class="alert alert-warning py-2">
+              Your basket is empty — <a routerLink="/shop">add items</a> before checking out.
+            </div>
+          }
+          <button type="button" class="btn btn-primary" [disabled]="basketEmpty" (click)="continueToCheckout()">
+            <i class="fas fa-credit-card mr-1"></i> Continue to Payment
           </button>
         }
       </div>

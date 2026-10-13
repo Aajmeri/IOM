@@ -1,0 +1,55 @@
+  <div class="form-group">
+    <label for="cardholderName">Name on card</label>
+    <input id="cardholderName" name="cardholderName" type="text" class="form-control"
+           autocomplete="cc-name" maxlength="128"
+           [class.is-invalid]="form.attempted && form.nameError"
+           [(ngModel)]="form.cardholderName" [ngModelOptions]="{ standalone: true }">
+    @if (form.attempted && form.nameError) { <div class="invalid-feedback">{{ form.nameError }}</div> }
+  </div>
+
+  <div class="form-group">
+    <label for="cardNumber">Card number</label>
+    <div class="input-group">
+      <input id="cardNumber" name="cardNumber" type="text" class="form-control"
+             inputmode="numeric" autocomplete="cc-number" placeholder="1234 1234 1234 1234"
+             [class.is-invalid]="form.attempted && form.numberError"
+             [ngModel]="form.cardNumber" [ngModelOptions]="{ standalone: true }" (ngModelChange)="form.onCardNumberInput($event)">
+      <div class="input-group-append">
+        <span class="input-group-text" style="min-width: 110px;">
+          <i class="far fa-credit-card mr-1"></i> {{ form.brand || 'Card' }}
+        </span>
+      </div>
+      @if (form.attempted && form.numberError) { <div class="invalid-feedback">{{ form.numberError }}</div> }
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group col-sm-8">
+      <label for="expiryMonth">Expiry</label>
+      <div class="d-flex">
+        <select id="expiryMonth" name="expiryMonth" class="form-control mr-2" autocomplete="cc-exp-month"
+                [class.is-invalid]="form.attempted && form.expiryError" [(ngModel)]="form.expiryMonth" [ngModelOptions]="{ standalone: true }">
+          <option [ngValue]="null" disabled>Month</option>
+          @for (m of form.months; track m.value) {
+            <option [ngValue]="m.value">{{ m.label }}</option>
+          }
+        </select>
+        <select id="expiryYear" name="expiryYear" class="form-control" autocomplete="cc-exp-year"
+                [class.is-invalid]="form.attempted && form.expiryError" [(ngModel)]="form.expiryYear" [ngModelOptions]="{ standalone: true }">
+          <option [ngValue]="null" disabled>Year</option>
+          @for (y of form.years; track y) {
+            <option [ngValue]="y">{{ y }}</option>
+          }
+        </select>
+      </div>
+      @if (form.attempted && form.expiryError) { <div class="invalid-feedback d-block">{{ form.expiryError }}</div> }
+    </div>
+    <div class="form-group col-sm-4">
+      <label for="cvc">CVC</label>
+      <input id="cvc" name="cvc" type="password" class="form-control"
+             inputmode="numeric" autocomplete="cc-csc" maxlength="4"
+             [class.is-invalid]="form.attempted && form.cvcError"
+             [ngModel]="form.cvc" [ngModelOptions]="{ standalone: true }" (ngModelChange)="form.onCvcInput($event)">
+      @if (form.attempted && form.cvcError) { <div class="invalid-feedback">{{ form.cvcError }}</div> }
+    </div>
+  </div>

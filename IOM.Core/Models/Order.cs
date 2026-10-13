@@ -23,6 +23,8 @@ namespace IOM.Core.Models
         public string AdminNotes { get; set; }
 
         public IList<OrderItem> OrderItems { get; set; }
+
+        public Payment Payment { get; set; }
     }
 
     public enum OrderStatus

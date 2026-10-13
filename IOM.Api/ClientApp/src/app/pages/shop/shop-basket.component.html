@@ -12,6 +12,9 @@
           <div class="alert alert-secondary">
             Your basket is empty. <a routerLink="/shop">Browse products</a> to get started.
           </div>
+          <button type="button" class="btn btn-outline-primary" (click)="scheduleDelivery()">
+            <i class="fas fa-calendar-alt mr-1"></i> View Delivery Schedule
+          </button>
         } @else {
           <table class="table table-bordered table-striped">
             <thead>

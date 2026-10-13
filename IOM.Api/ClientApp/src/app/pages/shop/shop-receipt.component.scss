@@ -1,0 +1,13 @@
+.receipt {
+  max-width: 800px;
+}
+
+// The AdminLTE chrome (header/sidebar/footer) is hidden for print in the global styles.scss;
+// this just makes the receipt card itself print cleanly.
+@media print {
+  .receipt {
+    max-width: none;
+    border: 0;
+    box-shadow: none;
+  }
+}

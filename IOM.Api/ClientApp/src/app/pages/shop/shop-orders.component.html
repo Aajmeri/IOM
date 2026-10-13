@@ -11,6 +11,9 @@
         @if (placedConfirmation) {
           <div class="alert alert-success">
             <i class="fas fa-check-circle mr-1"></i> Your order has been submitted and is pending approval.
+            @if (payLaterConfirmation) {
+              The payment is due before delivery — use <strong>Pay now</strong> below whenever you're ready.
+            }
           </div>
         }
 
@@ -29,6 +32,7 @@
                 <th>Order #</th>
                 <th>Scheduled Date</th>
                 <th>Status</th>
+                <th>Payment</th>
                 <th>Total</th>
                 <th></th>
               </tr>
@@ -39,11 +43,30 @@
                   <td>{{ order.number }}</td>
                   <td>{{ order.scheduledDate | date:'medium' }}</td>
                   <td><span class="badge" [class]="statusClass(order.status)">{{ order.status }}</span></td>
+                  <td>
+                    @if (order.paymentStatus === 'Paid') {
+                      <span class="badge badge-success">Paid</span>
+                    } @else if (order.paymentStatus === 'Refunded') {
+                      <span class="badge badge-secondary">Refunded</span>
+                    } @else {
+                      <span class="badge badge-warning">Unpaid</span>
+                    }
+                  </td>
                   <td>{{ order.total | currency }}</td>
                   <td>
                     <button type="button" class="btn btn-secondary btn-xs" (click)="toggleExpand(order)">
                       {{ expandedOrderId === order.id ? 'Hide' : 'Details' }}
                     </button>
+                    @if (canPay(order)) {
+                      <a [routerLink]="['/shop/orders', order.id, 'pay']" class="btn btn-success btn-xs ml-1">
+                        <i class="fas fa-credit-card mr-1"></i>Pay now
+                      </a>
+                    }
+                    @if (order.paymentStatus === 'Paid' || order.paymentStatus === 'Refunded') {
+                      <a [routerLink]="['/shop/orders', order.id, 'receipt']" class="btn btn-info btn-xs ml-1">
+                        <i class="fas fa-receipt mr-1"></i>Receipt
+                      </a>
+                    }
                     @if (order.status === 'Pending') {
                       <button type="button" class="btn btn-danger btn-xs ml-1"
                               [disabled]="cancellingId === order.id"
@@ -55,7 +78,7 @@
                 </tr>
                 @if (expandedOrderId === order.id) {
                   <tr>
-                    <td colspan="5">
+                    <td colspan="6">
                       @if (order.notes) {
                         <p><strong>Notes:</strong> {{ order.notes }}</p>
                       }

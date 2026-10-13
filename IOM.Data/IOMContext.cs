@@ -27,6 +27,12 @@ namespace IOM.Data
             modelBuilder.Entity<OrderItem>().HasKey(oi => new { oi.OrderId, oi.ProductId });
             modelBuilder.Entity<OrderItem>().Property(oi => oi.UnitPrice).HasColumnType("decimal(18,4)");
             modelBuilder.Entity<Order>().Property(o => o.Status).HasConversion<string>();
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Payment)
+                .WithOne(p => p.Order)
+                .HasForeignKey<Payment>(p => p.OrderId);
+            modelBuilder.Entity<Payment>().Property(p => p.Amount).HasColumnType("decimal(18,4)");
+            modelBuilder.Entity<Payment>().Property(p => p.Status).HasConversion<string>().HasMaxLength(16);
 
             // FakeData.Init(100);
             // // modelBuilder.Entity<User>().HasData(FakeData.Users);
@@ -53,6 +59,7 @@ namespace IOM.Data
         public DbSet<Delivery> Deliveries { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
     }
 }

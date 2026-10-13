@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using IOM.Core.Services;
 using IOM.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -7,6 +8,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace IOM.Tests.Integration
 {
@@ -23,6 +25,9 @@ namespace IOM.Tests.Integration
     public class IomWebApplicationFactory : WebApplicationFactory<Program>
     {
         private readonly SqliteConnection _connection = new SqliteConnection("DataSource=:memory:");
+
+        /// <summary>Every email the API "sent" during this host's lifetime (nothing really goes out).</summary>
+        public CapturingEmailService Emails { get; } = new CapturingEmailService();
 
         public IomWebApplicationFactory()
         {
@@ -47,6 +52,9 @@ namespace IOM.Tests.Integration
                     (d.ServiceType.IsGenericType && d.ServiceType.GetGenericArguments().Contains(typeof(IOMContext))))
                     .ToList();
                 foreach (var d in toRemove) services.Remove(d);
+
+                services.RemoveAll<IEmailService>();
+                services.AddSingleton<IEmailService>(Emails);
 
                 // Matches the .ConfigureWarnings(...) on Program.cs's own (removed) SqlServer
                 // registration - without it, EF Core throws PendingModelChangesWarning as an error

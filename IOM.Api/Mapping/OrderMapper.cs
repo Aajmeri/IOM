@@ -39,7 +39,52 @@ public partial class OrderMapper
             AdminNotes = order.AdminNotes,
             Total = items.Sum(i => i.UnitPrice * i.Quantity),
             CreatedDate = order.CreatedDate,
+            PaymentStatus = order.Payment?.Status.ToString() ?? "Unpaid",
             Items = items
+        };
+    }
+
+    public ReceiptResource ToReceipt(Order order)
+    {
+        if (order?.Payment == null) return null;
+
+        var summary = ToResource(order);
+        var payment = order.Payment;
+        return new ReceiptResource
+        {
+            OrderId = order.Id,
+            OrderNumber = order.Number,
+            OrderStatus = summary.Status,
+            OrderDate = order.CreatedDate,
+            ScheduledDate = order.ScheduledDate,
+            ClientName = order.Client?.Name,
+            ClientEmail = order.Client?.Email,
+            Notes = order.Notes,
+            Items = summary.Items,
+            Total = summary.Total,
+            PaymentStatus = payment.Status.ToString(),
+            PaymentMethod = payment.Method,
+            CardBrand = payment.CardBrand,
+            CardLast4 = payment.CardLast4,
+            CardholderName = payment.CardholderName,
+            TransactionId = payment.TransactionId,
+            AmountPaid = payment.Amount,
+            PaidDate = payment.PaidDate,
+            RefundedDate = payment.RefundedDate
+        };
+    }
+
+    public CardDetails ToCardDetails(PaymentCardResource payment)
+    {
+        if (payment == null) return null;
+
+        return new CardDetails
+        {
+            CardholderName = payment.CardholderName,
+            CardNumber = payment.CardNumber,
+            ExpiryMonth = payment.ExpiryMonth,
+            ExpiryYear = payment.ExpiryYear,
+            Cvc = payment.Cvc
         };
     }
 

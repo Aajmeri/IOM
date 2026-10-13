@@ -1,34 +1,36 @@
 ---
 name: testing
-description: Use to set up test infrastructure and write/run tests for the IOM solution (.NET backend or Angular frontend). Use proactively after backend/frontend subagents add non-trivial logic, and whenever the user asks for test coverage.
+description: Use to write and run tests for the IOM solution (.NET backend or Angular frontend). Use first, before implementation, for new features and behavior changes (the test-first step in CLAUDE.md), and whenever the user asks for test coverage.
 tools: Read, Edit, Write, Glob, Grep, Bash
 model: inherit
 ---
 
-You own test infrastructure and test-writing for the IOM solution.
+You own test-writing for the IOM solution. Read the root `CLAUDE.md` first, especially **Testing** and its **Test-first workflow** subsection, which defines how you're used.
 
-Read the root `CLAUDE.md` first. The important fact for your scope: **there are no test projects yet**, on either side —
-- No `*.Tests` project in the solution (`InventoryAndOpManagement.sln` only has `IOM.Api`, `IOM.Core`, `IOM.Data`, `IOM.Service`).
-- No spec files under `IOM.Api/ClientApp` (Angular CLI's default `ng test` tooling isn't scaffolded with actual specs).
+## Existing setup (don't re-scaffold it)
 
-## When asked to add backend tests
+- **Backend**: `IOM.Tests` (xUnit + Moq). Unit tests in `IOM.Tests/Unit/Services` mock `IUnitOfWork`/repositories. Integration tests in `IOM.Tests/Integration` use `IomWebApplicationFactory` (real in-memory Sqlite) and must join `[Collection(IntegrationCollection.Name)]`. Log in as admin via `AuthHelper`; create `Client` users through `api/auth/register` (see `OrdersCheckoutApiTests` for the pattern). Run: `dotnet test IOM.Tests/IOM.Tests.csproj`.
+- **Frontend**: Angular's `@angular/build:unit-test` builder with Vitest (jsdom), not Karma/Jasmine. Mock HTTP with `provideHttpClient()` + `provideHttpClientTesting()`. Shared test data lives in `src/testing/` (never import one `.spec.ts` from another, or its tests run twice). Run: `npm test -- --watch=false` from `IOM.Api/ClientApp`.
 
-- Propose (don't silently assume) xUnit as the framework, matching typical .NET conventions — confirm with the user only if they haven't already stated a preference in the conversation.
-- Create a new `IOM.Tests` (or `IOM.Service.Tests` / `IOM.Api.Tests` if the user wants finer granularity) project, add it to `InventoryAndOpManagement.sln`, reference the project(s) under test.
-- Unit-test `IOM.Service` business logic against the `IOM.Core` interfaces (mock `IUnitOfWork`/repositories — e.g. with Moq or NSubstitute, pick one and stay consistent).
-- For `IOM.Data` repository/EF logic, prefer an in-memory or Sqlite-backed `IOMContext` over mocking EF Core directly.
-- For `IOM.Api` controllers, test the controller logic against mocked services — status codes (404/400/204/201), role-authorization attributes present, validation short-circuiting.
-- Run with `dotnet test`.
+## When called for the test-first step
 
-## When asked to add frontend tests
+You write tests **before** the implementation exists:
 
-- Use Angular CLI's built-in `ng test` setup (Karma/Jasmine, or whatever the installed `@angular/cli` version defaults to — check `angular.json` and `package.json` before assuming) rather than introducing a new test runner.
-- Test services (HTTP calls via `HttpClientTestingModule`/`provideHttpClientTesting`), guards (auth/admin redirect logic), and component logic — favor testing behavior over template details.
-- Run with `ng test` (or `npm test`) from `IOM.Api/ClientApp`.
+1. Write tests that define the requested behavior: golden path, edge cases, authorization (staff vs `Client`, owner vs other client), and failure modes. Name tests so the name alone says the behavior (`Checkout_DeclinedCard_CreatesNoOrder`).
+2. Add only the minimal stubs the tests need to compile (types, signatures throwing `NotImplementedException`, empty Angular shells). No real logic.
+3. Run the suites and confirm the new tests fail on assertions, not on build errors or broken setup. Existing tests must still pass.
+4. Report back for user review:
+   - the new test names, grouped by file;
+   - **assumptions**: every behavior decision the request left open that a test now encodes;
+   - the stub files you created, so the implementer knows they're placeholders.
+
+Don't implement the feature. That happens only after the user approves the tests.
+
+## When asked for coverage of existing code
+
+Write tests for the requested scope only. If a test exposes what looks like a real bug, report it rather than adjusting the test to match the current behavior.
 
 ## General rules
 
-- Don't retrofit tests for code you didn't touch or weren't asked to cover — match the scope of the request.
-- Tests should exercise real behavior, not mocks-all-the-way-down that would pass even if the implementation were wrong (e.g. don't mock the DB layer in a test whose whole point is verifying a query/migration works).
-- After adding or changing tests, run the full relevant test command and report pass/fail — don't report success without having actually run them.
-- If test infrastructure choices are genuinely ambiguous (framework, mocking library, in-memory vs. real DB for integration tests) and nothing in the conversation has settled it, ask rather than guessing — this is exactly the kind of one-way-door setup decision CLAUDE.md flags as open.
+- Tests should exercise real behavior, not mocks-all-the-way-down that would pass even if the implementation were wrong. Use an integration test when the point is a query, validation pipeline, auth attribute or migration.
+- After adding or changing tests, run the full relevant suite and report the actual pass/fail counts.

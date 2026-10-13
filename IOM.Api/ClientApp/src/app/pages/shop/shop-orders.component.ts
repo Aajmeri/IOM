@@ -14,6 +14,7 @@ export class ShopOrdersComponent implements OnInit {
   loading = true;
   error = '';
   placedConfirmation = false;
+  payLaterConfirmation = false;
   cancellingId: string | null = null;
   expandedOrderId: string | null = null;
 
@@ -22,6 +23,7 @@ export class ShopOrdersComponent implements OnInit {
 
   ngOnInit(): void {
     this.placedConfirmation = this.route.snapshot.queryParams['placed'] === '1';
+    this.payLaterConfirmation = this.route.snapshot.queryParams['payLater'] === '1';
     this.load();
   }
 
@@ -39,12 +41,18 @@ export class ShopOrdersComponent implements OnInit {
     });
   }
 
+  /** Pay-later orders can be paid while they're still going ahead. */
+  canPay(order: Order): boolean {
+    return order.paymentStatus === 'Unpaid' && (order.status === 'Pending' || order.status === 'Approved');
+  }
+
   toggleExpand(order: Order): void {
     this.expandedOrderId = this.expandedOrderId === order.id ? null : order.id;
   }
 
   cancel(order: Order): void {
-    if (!confirm(`Cancel order ${order.number}?`)) return;
+    const refundNote = order.paymentStatus === 'Paid' ? ' Your payment will be refunded in full.' : '';
+    if (!confirm(`Cancel order ${order.number}?${refundNote}`)) return;
     this.cancellingId = order.id;
     this.orderService.cancel(order.id).subscribe({
       next: () => {

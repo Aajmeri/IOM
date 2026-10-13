@@ -33,7 +33,9 @@ namespace IOM.Api.Controllers.Api
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var user = await _userService.ValidateLoginAsync(request.Email, request.Password);
-            if (user == null)
+            // A deactivated account (Active == false, set from the Users admin page) can't sign
+            // in. Same message as a wrong password, so it doesn't reveal which accounts exist.
+            if (user == null || !user.Active)
                 return Unauthorized(new { message = "Invalid email or password." });
 
             var token = GenerateJwtToken(user);
@@ -50,6 +52,7 @@ namespace IOM.Api.Controllers.Api
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             if (request.Password != request.ConfirmPassword)
                 return BadRequest(new { message = "Passwords do not match." });
 

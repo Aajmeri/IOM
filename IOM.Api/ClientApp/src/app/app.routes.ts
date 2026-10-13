@@ -31,7 +31,10 @@ export const routes: Routes = [
       { path: 'shop', canActivate: [clientGuard], loadComponent: () => import('./pages/shop/shop-products.component').then(m => m.ShopProductsComponent) },
       { path: 'shop/basket', canActivate: [clientGuard], loadComponent: () => import('./pages/shop/shop-basket.component').then(m => m.ShopBasketComponent) },
       { path: 'shop/schedule', canActivate: [clientGuard], loadComponent: () => import('./pages/shop/shop-schedule.component').then(m => m.ShopScheduleComponent) },
+      { path: 'shop/checkout', canActivate: [clientGuard], loadComponent: () => import('./pages/shop/shop-checkout.component').then(m => m.ShopCheckoutComponent) },
       { path: 'shop/orders', canActivate: [clientGuard], loadComponent: () => import('./pages/shop/shop-orders.component').then(m => m.ShopOrdersComponent) },
+      { path: 'shop/orders/:id/pay', canActivate: [clientGuard], loadComponent: () => import('./pages/shop/shop-pay.component').then(m => m.ShopPayComponent) },
+      { path: 'shop/orders/:id/receipt', canActivate: [clientGuard], loadComponent: () => import('./pages/shop/shop-receipt.component').then(m => m.ShopReceiptComponent) },
       { path: 'access-denied', loadComponent: () => import('./pages/access-denied/access-denied.component').then(m => m.AccessDeniedComponent) },
     ]
   },

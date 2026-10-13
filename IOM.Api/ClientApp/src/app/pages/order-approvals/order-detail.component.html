@@ -31,13 +31,22 @@
             <dd class="col-sm-9">{{ order.clientName }}</dd>
             <dt class="col-sm-3">Placed</dt>
             <dd class="col-sm-9">{{ order.createdDate | date:'medium' }}</dd>
+            <dt class="col-sm-3">Delivery</dt>
+            <dd class="col-sm-9">
+              {{ order.scheduledDate | date:'fullDate' }}, {{ order.scheduledDate | date:'shortTime' }}
+              @if (canReschedule) { <span class="text-muted small">(use Reschedule to change)</span> }
+            </dd>
+            <dt class="col-sm-3">Payment</dt>
+            <dd class="col-sm-9">
+              @if (order.paymentStatus === 'Paid') {
+                <span class="badge badge-success">Paid</span>
+              } @else if (order.paymentStatus === 'Refunded') {
+                <span class="badge badge-secondary">Refunded</span>
+              } @else {
+                <span class="badge badge-warning">Unpaid</span> <span class="text-muted small">(pay later)</span>
+              }
+            </dd>
           </dl>
-
-          <div class="form-group">
-            <label>Scheduled Date/Time</label>
-            <input type="datetime-local" class="form-control" [(ngModel)]="scheduledDate"
-                   name="scheduledDate" [disabled]="!isPending">
-          </div>
 
           <div class="form-group">
             <label>Client Notes</label>
@@ -102,7 +111,10 @@
         </div>
         <div class="card-body">
           @if (!isPending) {
-            <p class="text-muted">This order has already been {{ order.status | lowercase }} and can no longer be changed.</p>
+            <p class="text-muted">
+              This order has already been {{ order.status | lowercase }}.
+              @if (canReschedule) { It can still be rescheduled below. } @else { It can no longer be changed. }
+            </p>
             @if (order.adminNotes) {
               <p><strong>Admin Notes:</strong> {{ order.adminNotes }}</p>
             }
@@ -113,7 +125,7 @@
                         placeholder="Optional for approval, required to reject…"></textarea>
             </div>
             <button type="button" class="btn btn-success btn-block" [disabled]="deciding" (click)="approve()">
-              <i class="fas fa-check mr-1"></i> Approve
+              <i class="fas fa-check mr-1"></i> Accept
             </button>
             <button type="button" class="btn btn-danger btn-block" [disabled]="deciding" (click)="reject()">
               <i class="fas fa-times mr-1"></i> Reject
@@ -121,6 +133,62 @@
           }
         </div>
       </div>
+
+      @if (canReschedule) {
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Reschedule</h3>
+          </div>
+          <div class="card-body">
+            @if (rescheduleMessage) {
+              <div class="alert alert-success">{{ rescheduleMessage }}</div>
+            }
+            @if (rescheduleError) {
+              <div class="alert alert-danger">{{ rescheduleError }}</div>
+            }
+
+            <div class="form-group">
+              <label for="rescheduleDate">New delivery date</label>
+              <input id="rescheduleDate" type="date" class="form-control" name="rescheduleDate" [min]="today"
+                     [(ngModel)]="rescheduleDate" (ngModelChange)="loadRescheduleSlots()">
+            </div>
+
+            @if (loadingSlots) {
+              <div class="text-center py-2"><span class="spinner-border spinner-border-sm text-primary"></span></div>
+            } @else if (rescheduleDate) {
+              @if (rescheduleSlots.length === 0) {
+                <p class="text-muted small">No open delivery slots on this day.</p>
+              } @else {
+                <div class="form-group">
+                  <label>Time</label>
+                  <div class="d-flex flex-wrap">
+                    @for (slot of rescheduleSlots; track slot.start) {
+                      <button type="button" class="btn btn-sm mr-2 mb-2"
+                              [class.btn-primary]="rescheduleSlot === slot"
+                              [class.btn-outline-primary]="rescheduleSlot !== slot"
+                              (click)="rescheduleSlot = slot">
+                        {{ slot.start | date:'shortTime' }} – {{ slot.end | date:'shortTime' }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            }
+
+            <div class="form-group">
+              <label for="rescheduleReason">Reason (sent to the client, optional)</label>
+              <textarea id="rescheduleReason" class="form-control" rows="2" name="rescheduleReason" maxlength="1000"
+                        [(ngModel)]="rescheduleReason"></textarea>
+            </div>
+
+            <button type="button" class="btn btn-warning btn-block" [disabled]="rescheduling || !rescheduleSlot" (click)="reschedule()">
+              @if (rescheduling) { <span class="spinner-border spinner-border-sm mr-1"></span> }
+              @else { <i class="fas fa-calendar-alt mr-1"></i> }
+              Reschedule &amp; Email Client
+            </button>
+          </div>
+        </div>
+      }
     </div>
   </div>
 }

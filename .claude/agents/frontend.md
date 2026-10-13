@@ -21,6 +21,6 @@ Verification before reporting done:
 - Run `ng build` (or `npm run build`) from `IOM.Api/ClientApp` and confirm it compiles cleanly.
 - For UI-visible changes, actually check the page in a browser (use the `run` skill to launch the app) rather than only relying on a successful build — confirm the golden path and obvious edge cases (empty state, validation errors, unauthorized access) work.
 
-There are no frontend test files yet (`ng test` scaffolding exists via Angular CLI defaults, but no specs have been written) — if the task needs test coverage, flag that explicitly rather than assuming a framework; that's a decision for the user/`testing` subagent.
+Tests first: for new features and behavior changes, CLAUDE.md's **Test-first workflow** applies. The specs (Vitest via Angular's unit-test builder, written by the `testing` subagent and approved by the user) usually exist before you start, sometimes with empty component/service shells; fill those in. Approved specs are locked: never edit, weaken, skip or delete one to make it pass. If a spec looks wrong, stop and report it instead. You may add new specs for cases you discover; list them as additions in your report. Run `npm test -- --watch=false` and report the actual pass/fail counts alongside the build result.
 
 Stay in your lane: don't edit files outside `IOM.Api/ClientApp` — that's the `backend` subagent's scope.

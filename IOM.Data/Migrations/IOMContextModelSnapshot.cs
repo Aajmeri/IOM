@@ -235,6 +235,57 @@ namespace IOM.Data.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("IOM.Core.Models.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("CardBrand")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("CardLast4")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("CardholderName")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Method")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("PaidDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RefundedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("Payments");
+                });
+
             modelBuilder.Entity("IOM.Core.Models.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -477,6 +528,17 @@ namespace IOM.Data.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("IOM.Core.Models.Payment", b =>
+                {
+                    b.HasOne("IOM.Core.Models.Order", "Order")
+                        .WithOne("Payment")
+                        .HasForeignKey("IOM.Core.Models.Payment", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("IOM.Core.Models.SupplierProduct", b =>
                 {
                     b.HasOne("IOM.Core.Models.Product", "Product")
@@ -511,6 +573,8 @@ namespace IOM.Data.Migrations
             modelBuilder.Entity("IOM.Core.Models.Order", b =>
                 {
                     b.Navigation("OrderItems");
+
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("IOM.Core.Models.Product", b =>

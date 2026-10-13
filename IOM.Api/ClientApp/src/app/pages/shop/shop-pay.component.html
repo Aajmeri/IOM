@@ -1,0 +1,85 @@
+@if (loading) {
+  <div class="text-center py-5"><span class="spinner-border text-primary"></span></div>
+} @else if (!order) {
+  <div class="alert alert-danger">{{ error }}</div>
+  <a routerLink="/shop/orders" class="btn btn-secondary btn-sm">
+    <i class="fas fa-arrow-left mr-1"></i> My Orders
+  </a>
+} @else {
+  <div class="row">
+    <div class="col-lg-5 order-lg-2">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Order {{ order.number }}</h3>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <tbody>
+              @for (item of order.items; track item.productId) {
+                <tr>
+                  <td>{{ item.productName }} <span class="text-muted">× {{ item.quantity }}</span></td>
+                  <td class="text-right">{{ item.unitPrice * item.quantity | currency }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total due</th>
+                <th class="text-right">{{ order.total | currency }}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="card-footer">
+          <strong>Delivery</strong><br>
+          {{ order.scheduledDate | date:'fullDate' }}, {{ order.scheduledDate | date:'shortTime' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-7 order-lg-1">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title">Pay for Your Order</h3>
+          <a routerLink="/shop/orders" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left mr-1"></i> My Orders
+          </a>
+        </div>
+        <div class="card-body">
+          @if (alreadyPaid) {
+            <div class="alert alert-success">
+              This order has already been paid.
+              <a [routerLink]="['/shop/orders', order.id, 'receipt']">View the receipt</a>.
+            </div>
+          } @else if (!payable) {
+            <div class="alert alert-secondary">
+              This order was {{ order.status | lowercase }} and can no longer be paid.
+            </div>
+          } @else {
+            <div class="alert alert-info small">
+              <i class="fas fa-info-circle mr-1"></i>
+              Payments are <strong>simulated</strong> and no money is taken. Use <code>4242 4242 4242 4242</code> with any
+              future expiry date and any 3-digit CVC. <code>4000 0000 0000 0002</code> is always declined.
+            </div>
+
+            @if (error) {
+              <div class="alert alert-danger" role="alert">{{ error }}</div>
+            }
+
+            <form (ngSubmit)="pay()" novalidate autocomplete="on">
+              <app-card-fields [form]="this"></app-card-fields>
+
+              <button type="submit" class="btn btn-success btn-lg btn-block" [disabled]="submitting">
+                @if (submitting) {
+                  <span class="spinner-border spinner-border-sm mr-1"></span> Processing…
+                } @else {
+                  <i class="fas fa-lock mr-1"></i> Pay {{ order.total | currency }}
+                }
+              </button>
+            </form>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

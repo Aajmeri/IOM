@@ -1,13 +1,26 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CalendarOptions, EventClickArg, EventInput } from '@fullcalendar/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import { OrderService, Order, OrderStatus } from '../../services/order.service';
+
+const STATUS_COLORS: Record<OrderStatus, string> = {
+  Pending: '#ffc107',
+  Approved: '#28a745',
+  Rejected: '#dc3545',
+  Cancelled: '#6c757d'
+};
+
+type ViewMode = 'list' | 'calendar';
 
 @Component({
   selector: 'app-order-approvals',
   standalone: true,
-  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe],
+  imports: [FormsModule, RouterLink, CurrencyPipe, DatePipe, FullCalendarModule],
   templateUrl: './order-approvals.component.html'
 })
 export class OrderApprovalsComponent implements OnInit {
@@ -16,8 +29,21 @@ export class OrderApprovalsComponent implements OnInit {
   error = '';
   statusFilter: OrderStatus | '' = 'Pending';
   statuses: OrderStatus[] = ['Pending', 'Approved', 'Rejected', 'Cancelled'];
+  view: ViewMode = 'list';
+
+  @ViewChild('calendar') calendarRef?: FullCalendarComponent;
 
   private orderService = inject(OrderService);
+  private router = inject(Router);
+
+  calendarOptions: CalendarOptions = {
+    plugins: [dayGridPlugin, interactionPlugin],
+    initialView: 'dayGridMonth',
+    height: 'auto',
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth' },
+    events: (info, successCallback) => successCallback(this.toEvents()),
+    eventClick: (arg: EventClickArg) => this.onEventClick(arg)
+  };
 
   ngOnInit(): void {
     this.load();
@@ -29,12 +55,30 @@ export class OrderApprovalsComponent implements OnInit {
       next: orders => {
         this.orders = orders.sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
         this.loading = false;
+        this.calendarRef?.getApi().refetchEvents();
       },
       error: () => {
         this.error = 'Failed to load orders.';
         this.loading = false;
       }
     });
+  }
+
+  setView(view: ViewMode): void {
+    this.view = view;
+  }
+
+  private toEvents(): EventInput[] {
+    return this.orders.map(order => ({
+      id: order.id,
+      title: `${order.clientName} (${order.number})`,
+      start: order.scheduledDate,
+      color: STATUS_COLORS[order.status]
+    }));
+  }
+
+  private onEventClick(arg: EventClickArg): void {
+    this.router.navigate(['/order-approvals', arg.event.id]);
   }
 
   statusClass(status: OrderStatus): string {

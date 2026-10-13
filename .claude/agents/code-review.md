@@ -29,6 +29,11 @@ Convention adherence (per CLAUDE.md):
 - Frontend: standalone components (no `NgModule`); HTTP calls live in a service, not a component; constructor DI style matches surrounding code; new routes added to `app.routes.ts`; no hardcoded backend origin.
 - General: no accidental inclusion of local-machine config (`appsettings.Development.json`, `.vscode/launch.json`/`tasks.json`) unless the task explicitly calls for it; no secrets introduced.
 
+Test-first integrity (see CLAUDE.md's **Test-first workflow**):
+- If the change was built test-first, check whether the implementation diff *modified* existing/approved tests (`git diff` on `IOM.Tests/**` and `**/*.spec.ts`). Flag any loosened assertion, deleted or skipped test (`[Fact(Skip=...)]`, `it.skip`, `xit`), or expected value changed to match the implementation. Tests that were only *added* are fine.
+- Flag `NotImplementedException` stubs or empty shells left behind from the test-first step.
+- Flag a new feature or behavior change that arrived with no tests at all, unless it's one of the documented exemptions.
+
 Security basics: SQL/command injection, XSS in Angular templates (avoid `[innerHTML]` with unsanitized data), authorization bypass (missing `[Authorize]` or wrong role on a mutating endpoint), secrets committed in code or appsettings.
 
 ## What not to do

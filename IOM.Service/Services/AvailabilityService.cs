@@ -28,10 +28,12 @@ namespace IOM.Service.Services
             }
 
             // Bound the requested range so a client can't force one CountActiveInSlotAsync DB
-            // query per slot across an arbitrarily large window - cap it at the same
-            // Scheduling:MaxAdvanceDays window that bounds how far out an order can actually be
-            // scheduled, since anything further out is meaningless to ask about anyway.
-            var maxRangeDays = SchedulingHelper.GetMaxAdvanceDays(_configuration);
+            // query per slot across an arbitrarily large window. This is intentionally larger
+            // than Scheduling:MaxAdvanceDays (not equal to it): a month-view calendar's grid
+            // pads out to full weeks, so a single visible month can span up to ~6 weeks (42
+            // days) of requested range even though most of those days fall outside the
+            // bookable advance window (they just come back as fully unavailable below).
+            const int maxRangeDays = 42;
             if ((end.Date - start.Date).TotalDays > maxRangeDays)
             {
                 return (null, $"The requested date range cannot exceed {maxRangeDays} day(s).");

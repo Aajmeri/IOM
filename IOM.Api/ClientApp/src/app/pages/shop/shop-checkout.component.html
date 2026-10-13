@@ -1,0 +1,113 @@
+<div class="row">
+  <div class="col-lg-5 order-lg-2">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Order Summary</h3>
+      </div>
+      <div class="card-body p-0">
+        @if (basketEmpty) {
+          <div class="alert alert-warning m-3">
+            Your basket is empty. <a routerLink="/shop">Add items</a> before checking out.
+          </div>
+        } @else {
+          <table class="table table-sm mb-0">
+            <tbody>
+              @for (item of basket.basket(); track item.productId) {
+                <tr>
+                  <td>{{ item.name }} <span class="text-muted">× {{ item.quantity }}</span></td>
+                  <td class="text-right">{{ item.price * item.quantity | currency }}</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total</th>
+                <th class="text-right" data-testid="checkout-total">{{ basket.total() | currency }}</th>
+              </tr>
+            </tfoot>
+          </table>
+        }
+      </div>
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <strong>Delivery</strong><br>
+            @if (slotStart) {
+              {{ slotStart | date:'fullDate' }}<br>
+              {{ slotStart | date:'shortTime' }}@if (slotEnd) { – {{ slotEnd | date:'shortTime' }} }
+            } @else {
+              <span class="text-danger">No delivery time selected.</span>
+            }
+          </div>
+          <a routerLink="/shop/schedule" class="btn btn-link btn-sm p-0">change</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7 order-lg-1">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Payment</h3>
+        <a routerLink="/shop/basket" class="btn btn-secondary btn-sm">
+          <i class="fas fa-arrow-left mr-1"></i> Back to Basket
+        </a>
+      </div>
+      <div class="card-body">
+        @if (!slotStart) {
+          <div class="alert alert-warning">
+            Pick a delivery time first. <a routerLink="/shop/schedule">Choose a delivery slot</a>.
+          </div>
+        }
+
+        @if (error) {
+          <div class="alert alert-danger" role="alert">{{ error }}</div>
+        }
+
+        <form (ngSubmit)="pay()" novalidate autocomplete="on">
+          <div class="form-group">
+            <div class="custom-control custom-radio">
+              <input type="radio" id="payNow" name="paymentOption" class="custom-control-input"
+                     [value]="false" [(ngModel)]="payLater">
+              <label class="custom-control-label" for="payNow">Pay now by card</label>
+            </div>
+            <div class="custom-control custom-radio">
+              <input type="radio" id="payLater" name="paymentOption" class="custom-control-input"
+                     [value]="true" [(ngModel)]="payLater">
+              <label class="custom-control-label" for="payLater">
+                Pay later <span class="text-muted small">— place the order now and pay from <em>My Orders</em> before delivery</span>
+              </label>
+            </div>
+          </div>
+
+          @if (!payLater) {
+            <div class="alert alert-info small">
+              <i class="fas fa-info-circle mr-1"></i>
+              Payments are <strong>simulated</strong> and no money is taken. Use <code>4242 4242 4242 4242</code> with any
+              future expiry date and any 3-digit CVC. <code>4000 0000 0000 0002</code> is always declined.
+            </div>
+            <app-card-fields [form]="this"></app-card-fields>
+          }
+
+          <div class="form-group">
+            <label for="notes">Order notes (optional)</label>
+            <textarea id="notes" name="notes" class="form-control" rows="2" maxlength="1000"
+                      placeholder="Any special instructions for this delivery…"
+                      [(ngModel)]="notes"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-success btn-lg btn-block"
+                  [disabled]="submitting || basketEmpty || !slotStart">
+            @if (submitting) {
+              <span class="spinner-border spinner-border-sm mr-1"></span> Processing…
+            } @else if (payLater) {
+              <i class="fas fa-check mr-1"></i> Place Order ({{ basket.total() | currency }} due later)
+            } @else {
+              <i class="fas fa-lock mr-1"></i> Pay {{ basket.total() | currency }}
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

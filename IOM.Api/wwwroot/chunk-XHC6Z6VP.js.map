@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/services/user.service.ts"],
-  "sourcesContent": ["import { Injectable } from '@angular/core';\nimport { HttpClient } from '@angular/common/http';\nimport { Observable } from 'rxjs';\n\nexport interface User {\n  id: string;\n  name: string;\n  email: string;\n  role: string;\n  active: boolean;\n}\n\nexport interface UpdateUser {\n  name: string;\n  role: string;\n  active: boolean;\n}\n\n@Injectable({ providedIn: 'root' })\nexport class UserService {\n  private readonly base = '/api/users';\n\n  constructor(private http: HttpClient) {}\n\n  getAll(): Observable<User[]> {\n    return this.http.get<User[]>(this.base);\n  }\n\n  getById(id: string): Observable<User> {\n    return this.http.get<User>(`${this.base}/${id}`);\n  }\n\n  update(id: string, data: UpdateUser): Observable<void> {\n    return this.http.put<void>(`${this.base}/${id}`, data);\n  }\n\n  delete(id: string): Observable<void> {\n    return this.http.delete<void>(`${this.base}/${id}`);\n  }\n}\n"],
-  "mappings": ";;;;;;;;;AAmBM,IAAO,cAAP,MAAO,aAAW;EAGF;EAFH,OAAO;EAExB,YAAoB,MAAgB;AAAhB,SAAA,OAAA;EAAmB;EAEvC,SAAM;AACJ,WAAO,KAAK,KAAK,IAAY,KAAK,IAAI;EACxC;EAEA,QAAQ,IAAU;AAChB,WAAO,KAAK,KAAK,IAAU,GAAG,KAAK,IAAI,IAAI,EAAE,EAAE;EACjD;EAEA,OAAO,IAAY,MAAgB;AACjC,WAAO,KAAK,KAAK,IAAU,GAAG,KAAK,IAAI,IAAI,EAAE,IAAI,IAAI;EACvD;EAEA,OAAO,IAAU;AACf,WAAO,KAAK,KAAK,OAAa,GAAG,KAAK,IAAI,IAAI,EAAE,EAAE;EACpD;;qCAnBW,cAAW,mBAAA,UAAA,CAAA;EAAA;4EAAX,cAAW,SAAX,aAAW,WAAA,YADE,OAAM,CAAA;;;sEACnB,aAAW,CAAA;UADvB;WAAW,EAAE,YAAY,OAAM,CAAE;;;",
-  "names": []
-}

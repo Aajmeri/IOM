@@ -1,16 +1,26 @@
 <div class="row">
   <div class="col-12">
     <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
+      <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
         <h3 class="card-title">Order Approvals</h3>
-        <div class="form-inline">
-          <label class="mr-2 mb-0">Status</label>
-          <select class="form-control form-control-sm" [(ngModel)]="statusFilter" (ngModelChange)="load()">
-            <option value="">All</option>
-            @for (status of statuses; track status) {
-              <option [value]="status">{{ status }}</option>
-            }
-          </select>
+        <div class="d-flex align-items-center flex-wrap">
+          <div class="btn-group btn-group-sm mr-3">
+            <button type="button" class="btn" [class.btn-primary]="view === 'list'" [class.btn-outline-primary]="view !== 'list'" (click)="setView('list')">
+              <i class="fas fa-list mr-1"></i> List
+            </button>
+            <button type="button" class="btn" [class.btn-primary]="view === 'calendar'" [class.btn-outline-primary]="view !== 'calendar'" (click)="setView('calendar')">
+              <i class="fas fa-calendar-alt mr-1"></i> Calendar
+            </button>
+          </div>
+          <div class="form-inline">
+            <label class="mr-2 mb-0">Status</label>
+            <select class="form-control form-control-sm" [(ngModel)]="statusFilter" (ngModelChange)="load()">
+              <option value="">All</option>
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </div>
         </div>
       </div>
       <div class="card-body">
@@ -20,6 +30,14 @@
           <div class="alert alert-danger">{{ error }}</div>
         } @else if (orders.length === 0) {
           <div class="alert alert-secondary">No orders found for this filter.</div>
+        } @else if (view === 'calendar') {
+          <div class="mb-2 small">
+            <span class="badge" style="background:#ffc107;color:#212529;">Pending</span>
+            <span class="badge" style="background:#28a745;color:#fff;">Approved</span>
+            <span class="badge" style="background:#dc3545;color:#fff;">Rejected</span>
+            <span class="badge" style="background:#6c757d;color:#fff;">Cancelled</span>
+          </div>
+          <full-calendar #calendar [options]="calendarOptions"></full-calendar>
         } @else {
           <table class="table table-bordered table-striped">
             <thead>
@@ -28,6 +46,7 @@
                 <th>Client</th>
                 <th>Scheduled Date</th>
                 <th>Status</th>
+                <th>Payment</th>
                 <th>Total</th>
                 <th></th>
               </tr>
@@ -39,6 +58,11 @@
                   <td>{{ order.clientName }}</td>
                   <td>{{ order.scheduledDate | date:'medium' }}</td>
                   <td><span class="badge" [class]="statusClass(order.status)">{{ order.status }}</span></td>
+                  <td>
+                    <span class="badge" [class.badge-success]="order.paymentStatus === 'Paid'"
+                          [class.badge-secondary]="order.paymentStatus === 'Refunded'"
+                          [class.badge-warning]="order.paymentStatus === 'Unpaid'">{{ order.paymentStatus }}</span>
+                  </td>
                   <td>{{ order.total | currency }}</td>
                   <td>
                     <a [routerLink]="['/order-approvals', order.id]" class="btn btn-primary btn-xs">

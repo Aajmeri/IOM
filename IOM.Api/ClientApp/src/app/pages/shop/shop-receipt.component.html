@@ -1,0 +1,135 @@
+@if (loading) {
+  <div class="text-center py-5"><span class="spinner-border text-primary"></span></div>
+} @else if (error) {
+  <div class="alert alert-danger">{{ error }}</div>
+  <a routerLink="/shop/orders" class="btn btn-secondary btn-sm">
+    <i class="fas fa-arrow-left mr-1"></i> My Orders
+  </a>
+} @else if (receipt) {
+  <div class="no-print">
+    @if (justPlaced || justPaid) {
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle mr-1"></i>
+        <strong>Payment successful.</strong>
+        @if (justPlaced) { Your order has been placed and is pending approval. }
+        @if (emailedOnCheckout) {
+          A copy of this receipt has been emailed to <strong>{{ receipt.clientEmail }}</strong>.
+        } @else {
+          We couldn't email your receipt just now. Use <em>Email me a copy</em> below to try again.
+        }
+      </div>
+    }
+    @if (emailMessage) {
+      <div class="alert alert-success">{{ emailMessage }}</div>
+    }
+    @if (emailError) {
+      <div class="alert alert-danger">{{ emailError }}</div>
+    }
+
+    <div class="d-flex flex-wrap mb-3">
+      <button type="button" class="btn btn-primary mr-2 mb-2" (click)="print()">
+        <i class="fas fa-print mr-1"></i> Print Receipt
+      </button>
+      <button type="button" class="btn btn-outline-primary mr-2 mb-2" [disabled]="emailing" (click)="emailReceipt()">
+        @if (emailing) { <span class="spinner-border spinner-border-sm mr-1"></span> }
+        @else { <i class="fas fa-envelope mr-1"></i> }
+        Email me a copy
+      </button>
+      <a routerLink="/shop/orders" class="btn btn-secondary mr-2 mb-2">
+        <i class="fas fa-list mr-1"></i> My Orders
+      </a>
+      <a routerLink="/shop" class="btn btn-secondary mb-2">
+        <i class="fas fa-store mr-1"></i> Continue Shopping
+      </a>
+    </div>
+  </div>
+
+  <div class="card receipt">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <h2 class="h4 mb-1">Item Operating Management System</h2>
+          <div class="text-muted">Receipt</div>
+        </div>
+        <div class="text-right">
+          <div class="h5 mb-1">{{ receipt.orderNumber }}</div>
+          <div class="text-muted small">{{ receipt.orderDate | date:'medium' }}</div>
+          @if (receipt.paymentStatus === 'Refunded') {
+            <span class="badge badge-secondary mt-1">REFUNDED</span>
+          } @else {
+            <span class="badge badge-success mt-1">PAID</span>
+          }
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-sm-6 mb-2">
+          <div class="text-muted small text-uppercase">Billed to</div>
+          <div>{{ receipt.clientName }}</div>
+          <div>{{ receipt.clientEmail }}</div>
+        </div>
+        <div class="col-sm-6 mb-2 text-sm-right">
+          <div class="text-muted small text-uppercase">Scheduled delivery</div>
+          <div>{{ receipt.scheduledDate | date:'fullDate' }}</div>
+          <div>{{ receipt.scheduledDate | date:'shortTime' }}</div>
+          <div class="small">Order status: {{ receipt.orderStatus }}</div>
+        </div>
+      </div>
+
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th class="text-right">Qty</th>
+            <th class="text-right">Unit Price</th>
+            <th class="text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of receipt.items; track item.productId) {
+            <tr>
+              <td>{{ item.productName }}</td>
+              <td class="text-right">{{ item.quantity }}</td>
+              <td class="text-right">{{ item.unitPrice | currency }}</td>
+              <td class="text-right">{{ lineTotal(item) | currency }}</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <th colspan="3" class="text-right">Total</th>
+            <th class="text-right" data-testid="receipt-total">{{ receipt.total | currency }}</th>
+          </tr>
+        </tfoot>
+      </table>
+
+      @if (receipt.notes) {
+        <p class="small"><strong>Notes:</strong> {{ receipt.notes }}</p>
+      }
+
+      <div class="border-top pt-3">
+        <div class="text-muted small text-uppercase mb-1">Payment</div>
+        <dl class="row mb-0 small">
+          <dt class="col-sm-4">Method</dt>
+          <dd class="col-sm-8">{{ receipt.cardBrand }} ending in {{ receipt.cardLast4 }}</dd>
+          @if (receipt.cardholderName) {
+            <dt class="col-sm-4">Cardholder</dt>
+            <dd class="col-sm-8">{{ receipt.cardholderName }}</dd>
+          }
+          <dt class="col-sm-4">Amount charged</dt>
+          <dd class="col-sm-8">{{ receipt.amountPaid | currency }}</dd>
+          <dt class="col-sm-4">Paid on</dt>
+          <dd class="col-sm-8">{{ receipt.paidDate | date:'medium' }}</dd>
+          <dt class="col-sm-4">Transaction ID</dt>
+          <dd class="col-sm-8"><code>{{ receipt.transactionId }}</code></dd>
+          @if (receipt.paymentStatus === 'Refunded') {
+            <dt class="col-sm-4">Refunded on</dt>
+            <dd class="col-sm-8">{{ receipt.refundedDate | date:'medium' }}</dd>
+          }
+        </dl>
+      </div>
+
+      <p class="text-center text-muted small mt-4 mb-0">Thank you for your order.</p>
+    </div>
+  </div>
+}

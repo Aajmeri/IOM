@@ -1,0 +1,1 @@
+import{L as r,P as i,Ub as o,Vb as n}from"./chunk-4VYDCOZO.js";var s=class t{constructor(e){this.http=e}base="/api/availability";getRange(e,a){let l=new o().set("start",e).set("end",a);return this.http.get(this.base,{params:l})}static \u0275fac=function(a){return new(a||t)(i(n))};static \u0275prov=r({token:t,factory:t.\u0275fac,providedIn:"root"})};export{s as a};
